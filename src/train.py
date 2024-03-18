@@ -17,6 +17,34 @@ from utils import get_activation
 from config_loader import load_config
 from data_loader import get_dataloaders
 
+def train_epoch(model, dataloader, optimizer, device):
+    model.train()
+    train_losses = []
+    pbar = tqdm(dataloader, desc='Training')
+
+    for x, _ in pbar:
+        optimizer.zero_grad()
+        loss = model(x)
+        loss.backward()
+        optimizer.step()
+
+        train_losses.append(loss.item())
+        pbar.set_description(f"Train Loss: {np.mean(train_losses[-100:]):.3g}")
+    
+    avg_train_loss = np.mean(train_losses)
+    return avg_train_loss
+
+def val_epoch(model, dataloader, device):
+    model.eval()
+    val_losses = []
+
+    with torch.no_grad():
+        for x, _ in dataloader:
+            loss = model(x)
+            val_losses.append(loss.item())
+
+    avg_val_loss = np.mean(val_losses)
+    return avg_val_loss
 
 def train(config_path):
 
@@ -47,43 +75,12 @@ def train(config_path):
     
     # Train the model
     epochs = config['hyperparameters']['epochs']
-    train_losses = []
-    val_losses = []
-    avg_train_losses_per_epoch = []
-    avg_val_losses_per_epoch = []
-
+    
     for epoch in range(epochs):
-        # training
-        ddpm.train()
-        pbar = tqdm(train_dataloader)
-        temp_train_losses = []
-
-        for x, _ in pbar:
-            optim.zero_grad()
-            train_loss = ddpm(x)
-            train_loss.backward()
-            optim.step()
-
-            temp_train_losses.append(train_loss.item())
-            pbar.set_description(f"Epoch {epoch} - Train Loss: {np.mean(temp_train_losses[-100:]):.3g}")
-
-        
-        avg_train_loss = np.mean(temp_train_losses)
-        avg_train_losses_per_epoch.append(avg_train_loss)
-            
-        # validation
-        ddpm.eval()
-
-        temp_val_losses = []
-        with torch.no_grad():
-            for x, _ in test_dataloader:
-                val_loss = ddpm(x)
-                temp_val_losses.append(val_loss.item())
-            
-            avg_val_loss = np.mean(temp_val_losses)
-            avg_val_losses_per_epoch.append(avg_val_loss)
-            print(f"Epoch {epoch} - Val Loss: {avg_val_loss:.3g}")
-            
+        avg_train_loss = train_epoch(ddpm, train_dataloader, optim, accelerator.device)
+        avg_val_loss = val_epoch(ddpm, test_dataloader, accelerator.device)
+        print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}, Val Loss: {avg_val_loss:.3g}")
+   
         # generate samples
         with torch.no_grad():
             xh = ddpm.sample(16, (1, 28, 28), accelerator.device)  # Can get device explicitly with `accelerator.device`
