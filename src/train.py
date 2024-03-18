@@ -3,45 +3,28 @@ import torch
 import random
 import numpy as np
 from torch import nn
-from ddpm import DDPM
 from tqdm import tqdm
-from cnn_model import CNN
 from accelerate import Accelerator
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision.utils import save_image, make_grid
 
-# Load the configuration file
-def load_config(config_path):
-    with open(config_path, "r") as file:
-        config = yaml.safe_load(file)
-    return config
+from ddpm import DDPM
+from cnn_model import CNN
+from utils import set_seed
+from utils import get_activation
+from config_loader import load_config
+from data_loader import get_dataloaders
 
-# conert activitation function name to class
-def get_activation(name):
-    if name == "nn.GELU":
-        return nn.GELU
-    elif name == "nn.ReLU":
-        return nn.ReLU
-    else:
-        raise ValueError(f"Activation {name} not found")
 
 def train(config_path):
 
     # load config
     config = load_config(config_path)
+    set_seed(config['hyperparameters']['seed'])
 
-    # Initialise the random seed
-    seed = config['hyperparameters']['seed']  # Assuming seed is under hyperparameters
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
-        torch.manual_seed(config['seed'])
-
-    # extract config
+    # initialise the model
     cnn_config = config['CNN']
     cnn_config['act'] = get_activation(cnn_config['act'])
     ddpm_config = config['ddpm']
@@ -52,13 +35,8 @@ def train(config_path):
     optim = torch.optim.Adam(ddpm.parameters(), lr=float(config["optim"]["lr"]))
 
     # Load the MNIST dataset
-    tf = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5,), (1.0))])
-    train_dataset = MNIST("./data", train=True, download=True, transform=tf)
-    test_dataset = MNIST("./data", train=False, download=True, transform=tf)
-    train_dataloader = DataLoader(train_dataset, batch_size=config["hyperparameters"]["batch_size"], 
-                                  shuffle=True, num_workers=config["hyperparameters"]["num_workers"], drop_last=True)
-    test_dataloader = DataLoader(test_dataset, batch_size=config["hyperparameters"]["batch_size"], 
-                                 shuffle=False, num_workers=config["hyperparameters"]["num_workers"], drop_last=True)
+    train_dataloader, test_dataloader = get_dataloaders(config["hyperparameters"]["batch_size"], 
+                                      config["hyperparameters"]["num_workers"])
 
     # prepare the device
     accelerator = Accelerator()
