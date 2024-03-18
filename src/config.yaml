@@ -3,7 +3,7 @@ hyperparameters:
   seed: 12042000
   batch_size: 128
   num_workers: 4
-  epochs: 10
+  epochs: 2
 
 CNN:
   in_channels: 1  

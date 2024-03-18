@@ -14,8 +14,10 @@ from ddpm import DDPM
 from cnn_model import CNN
 from utils import set_seed
 from utils import get_activation
+from plot_utils import plot_loss
 from config_loader import load_config
 from data_loader import get_dataloaders
+from utils import save_training_results
 
 def train_epoch(model, dataloader, optimizer, device):
     model.train()
@@ -47,6 +49,9 @@ def val_epoch(model, dataloader, device):
     return avg_val_loss
 
 def train(config_path):
+
+    # store metrics
+    metrics = []
 
     # load config
     config = load_config(config_path)
@@ -85,12 +90,26 @@ def train(config_path):
         with torch.no_grad():
             xh = ddpm.sample(16, (1, 28, 28), accelerator.device)  # Can get device explicitly with `accelerator.device`
             grid = make_grid(xh, nrow=4)
-
             # Save samples to `./contents` directory
             save_image(grid, f"./contents/ddpm_sample_{epoch:04d}.png")
-
             # save model
             torch.save(ddpm.state_dict(), f"./ddpm_mnist.pth")
+
+    epoch_metrics = {
+        "epoch": epoch,
+        "train_loss": avg_train_loss,
+        "val_loss": avg_val_loss
+    }
+    metrics.append(epoch_metrics)
+
+    # save metrics
+    if isinstance(cnn_config['act'], type):
+        cnn_config['act'] = cnn_config['act'].__name__
+    save_training_results(config, metrics)
+
+    # plot samples
+    loss = avg_train_loss, avg_val_loss
+    plot_loss(loss)
 
 if __name__ == "__main__":
     config = load_config("config.yaml")
