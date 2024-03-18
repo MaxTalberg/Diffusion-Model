@@ -1,0 +1,22 @@
+# config.yaml
+hyperparameters:
+  seed: 12042000
+  batch_size: 128
+  num_workers: 4
+  epochs: 10
+
+CNN:
+  in_channels: 1  
+  expected_shape: [28, 28]
+  n_hidden: [16, 32, 32, 16] 
+  kernel_size: 7  
+  last_kernel_size: 3  
+  time_embeddings: 16  
+  act: "nn.GELU"
+
+ddpm:
+  betas: [1e-4, 0.02]
+  n_T: 1000
+
+optim:
+  lr: 2e-4
