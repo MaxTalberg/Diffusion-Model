@@ -1,0 +1,49 @@
+{
+    "config": {
+        "hyperparameters": {
+            "seed": 12042000,
+            "batch_size": 128,
+            "num_workers": 4,
+            "epochs": 2
+        },
+        "CNN": {
+            "in_channels": 1,
+            "expected_shape": [
+                28,
+                28
+            ],
+            "n_hidden": [
+                16,
+                32,
+                32,
+                16
+            ],
+            "kernel_size": 7,
+            "last_kernel_size": 3,
+            "time_embeddings": 16,
+            "act": "GELU"
+        },
+        "ddpm": {
+            "betas": [
+                0.0001,
+                0.02
+            ],
+            "n_T": 1000
+        },
+        "optim": {
+            "lr": "2e-4"
+        }
+    },
+    "metrics": [
+        {
+            "epoch": 0,
+            "train_loss": 0.12461498510251698,
+            "val_loss": 0.052212961543446935
+        },
+        {
+            "epoch": 1,
+            "train_loss": 0.04658579534222173,
+            "val_loss": 0.041448405728890345
+        }
+    ]
+}

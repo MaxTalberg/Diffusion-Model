@@ -19,10 +19,10 @@ from config_loader import load_config
 from data_loader import get_dataloaders
 from utils import save_training_results
 
-def train_epoch(model, dataloader, optimizer, device):
+def train_epoch(model, dataloader, optimizer, single_batch=False):
     model.train()
     train_losses = []
-    pbar = tqdm(dataloader, desc='Training')
+    pbar = tqdm(dataloader, desc='Training', total=(1 if single_batch else None))
 
     for x, _ in pbar:
         optimizer.zero_grad()
@@ -31,12 +31,16 @@ def train_epoch(model, dataloader, optimizer, device):
         optimizer.step()
 
         train_losses.append(loss.item())
-        pbar.set_description(f"Train Loss: {np.mean(train_losses[-100:]):.3g}")
+        pbar.set_description(f"Train Loss: {np.mean(train_losses):.3g}")
+        
+        if single_batch:
+            break  # Exit after first batch if single_batch is True
     
     avg_train_loss = np.mean(train_losses)
     return avg_train_loss
 
-def val_epoch(model, dataloader, device):
+
+def val_epoch(model, dataloader, single_batch=False):
     model.eval()
     val_losses = []
 
@@ -45,13 +49,18 @@ def val_epoch(model, dataloader, device):
             loss = model(x)
             val_losses.append(loss.item())
 
+            if single_batch:
+                break
+
     avg_val_loss = np.mean(val_losses)
     return avg_val_loss
 
-def train(config_path):
+def train(config_path, quick_test=False):
 
     # store metrics
     metrics = []
+    avg_train_losses = []
+    avg_val_losses = []
 
     # load config
     config = load_config(config_path)
@@ -70,7 +79,7 @@ def train(config_path):
     # Load the MNIST dataset
     train_dataloader, test_dataloader = get_dataloaders(config["hyperparameters"]["batch_size"], 
                                       config["hyperparameters"]["num_workers"])
-
+    
     # prepare the device
     accelerator = Accelerator()
 
@@ -78,14 +87,30 @@ def train(config_path):
     # which lets HuggingFace's Accelerate handle the device placement and gradient accumulation.
     ddpm, optim, train_dataloader, test_dataloader = accelerator.prepare(ddpm, optim, train_dataloader, test_dataloader)
     
+    
+    # testing one image
+    data_iter = iter(train_dataloader)
+    single_batch_images, _ = next(data_iter)
+    single_image = single_batch_images[:1].to(accelerator.device)
+
     # Train the model
     epochs = config['hyperparameters']['epochs']
     
     for epoch in range(epochs):
-        avg_train_loss = train_epoch(ddpm, train_dataloader, optim, accelerator.device)
-        avg_val_loss = val_epoch(ddpm, test_dataloader, accelerator.device)
+        avg_train_loss = train_epoch(ddpm, train_dataloader, optim, single_batch=quick_test)
+        avg_val_loss = val_epoch(ddpm, test_dataloader, single_batch=quick_test)
         print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}, Val Loss: {avg_val_loss:.3g}")
-   
+
+        # Append epoch metrics here
+        epoch_metrics = {
+            "epoch": epoch,
+            "train_loss": avg_train_loss,
+            "val_loss": avg_val_loss
+        }
+        metrics.append(epoch_metrics)
+        avg_train_losses.append(avg_train_loss)
+        avg_val_losses.append(avg_val_loss)
+
         # generate samples
         with torch.no_grad():
             xh = ddpm.sample(16, (1, 28, 28), accelerator.device)  # Can get device explicitly with `accelerator.device`
@@ -95,22 +120,14 @@ def train(config_path):
             # save model
             torch.save(ddpm.state_dict(), f"./ddpm_mnist.pth")
 
-    epoch_metrics = {
-        "epoch": epoch,
-        "train_loss": avg_train_loss,
-        "val_loss": avg_val_loss
-    }
-    metrics.append(epoch_metrics)
-
     # save metrics
     if isinstance(cnn_config['act'], type):
         cnn_config['act'] = cnn_config['act'].__name__
     save_training_results(config, metrics)
 
     # plot samples
-    loss = avg_train_loss, avg_val_loss
-    plot_loss(loss)
+    plot_loss(avg_train_losses, avg_val_losses)
 
 if __name__ == "__main__":
     config = load_config("config.yaml")
-    train("config.yaml")
+    train("config.yaml", quick_test=False)  # Or set to False for full training
