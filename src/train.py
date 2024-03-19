@@ -113,7 +113,7 @@ def train(config_path, quick_test=False):
 
         # generate samples
         with torch.no_grad():
-            xh = ddpm.sample(16, (1, 28, 28), accelerator.device)  # Can get device explicitly with `accelerator.device`
+            xh = ddpm.sample(16, (1, 28, 28), accelerator.device)
             grid = make_grid(xh, nrow=4)
             # Save samples to `./contents` directory
             save_image(grid, f"./contents/ddpm_sample_{epoch:04d}.png")
@@ -136,4 +136,4 @@ def train(config_path, quick_test=False):
 
 if __name__ == "__main__":
     config = load_config("config.yaml")
-    train("config.yaml", quick_test=True)  # Set to False for full training
+    train("config.yaml", quick_test=False)  # Set to False for full training
