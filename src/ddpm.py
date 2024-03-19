@@ -60,3 +60,27 @@ class DDPM(nn.Module):
             # (We don't add noise at the final step - i.e., the last line of the algorithm)
 
         return z_t
+    
+    def sample_with_progress(self, n_sample: int, size, device, timesteps=None) -> torch.Tensor:
+        if timesteps is None:
+            timesteps = [self.n_T]  # Default to only the final step
+        
+        _one = torch.ones(n_sample, device=device)
+        z_t = torch.randn(n_sample, *size, device=device)
+        progress_images = []
+        
+        for i in range(self.n_T, 0, -1):
+            if i in timesteps:
+                progress_images.append(z_t.clone())  # Clone to avoid in-place modifications
+            
+            alpha_t = self.alpha_t[i]
+            beta_t = self.beta_t[i]
+
+            z_t -= (beta_t / torch.sqrt(1 - alpha_t)) * self.gt(z_t, (i / self.n_T) * _one)
+            z_t /= torch.sqrt(1 - beta_t)
+
+            if i > 1:
+                z_t += torch.sqrt(beta_t) * torch.randn_like(z_t)
+
+        return progress_images
+    

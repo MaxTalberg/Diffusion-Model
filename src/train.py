@@ -2,6 +2,7 @@ import yaml
 import torch
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 from torch import nn
 from tqdm import tqdm
 from accelerate import Accelerator
@@ -12,11 +13,21 @@ from torchvision.utils import save_image, make_grid
 
 from ddpm import DDPM
 from cnn_model import CNN
-from utils import set_seed
+from utils import load_config, set_seed
 from plot_utils import plot_loss
-from config_loader import load_config
 from data_loader import get_dataloaders
 from utils import save_training_results
+
+def plot_progress(images, timesteps, epoch, nrow=4):
+    fig, axes = plt.subplots(1, len(images), figsize=(2 * len(images), 2))  # Adjust the figure size as needed
+    for ax, img, timestep in zip(axes, images, timesteps):
+        ax.imshow(img.cpu().numpy().squeeze(), cmap='gray')
+        adjusted_timestep = 1000 - timestep
+        ax.set_title(fr"$Z_{{{adjusted_timestep}}}$", fontsize=10)
+        ax.axis('off')
+
+    plt.savefig(f"./contents/ddpm_progress_{epoch:04d}.png")
+    plt.close(fig) 
 
 def train_epoch(model, dataloader, optimizer, single_batch=False):
     model.train()
@@ -70,6 +81,7 @@ def train(config_path, quick_test=False):
     gt = CNN(**config['CNN'])
     ddpm = DDPM(gt = gt, **config["ddpm"])
     optim = torch.optim.Adam(ddpm.parameters(), lr=float(config["optim"]["lr"]))
+    timesteps = config["hyperparameters"]["timesteps"]
 
     # Load the MNIST dataset
     train_dataloader, test_dataloader = get_dataloaders(config["hyperparameters"]["batch_size"], 
@@ -106,13 +118,16 @@ def train(config_path, quick_test=False):
             save_image(grid, f"./contents/ddpm_sample_{epoch:04d}.png")
             # save model
             torch.save(ddpm.state_dict(), f"./ddpm_mnist.pth")
-
+            progress_images = ddpm.sample_with_progress(1, (1, 28, 28), accelerator.device, timesteps=timesteps)
+            plot_progress(progress_images, timesteps, epoch)
+    
     # save metrics
     save_training_results(config, metrics)
 
     # plot loss
     plot_loss(avg_train_losses, avg_val_losses)
 
+
 if __name__ == "__main__":
     config = load_config("config.yaml")
-    train("config.yaml", quick_test=False)  # Or set to False for full training
+    train("config.yaml", quick_test=True)  # Set to False for full training

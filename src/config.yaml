@@ -4,6 +4,7 @@ hyperparameters:
   batch_size: 128
   num_workers: 4
   epochs: 2
+  timesteps: [0, 1, 100, 250, 500, 750, 800, 900, 999, 1000]
 
 CNN:
   in_channels: 1  
