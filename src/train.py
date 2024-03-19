@@ -73,6 +73,7 @@ def train(config_path, quick_test=False):
     ddpm = DDPM(gt = gt, **config["ddpm"])
     optim = torch.optim.Adam(ddpm.parameters(), lr=float(config["optim"]["lr"]))
     timesteps = config["hyperparameters"]["timesteps"]
+    interval = config["hyperparameters"]["interval"]
 
     # Load the MNIST dataset
     train_dataloader, test_dataloader = get_dataloaders(config["hyperparameters"]["batch_size"], 
@@ -94,12 +95,18 @@ def train(config_path, quick_test=False):
 
         print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}, Val Loss: {avg_val_loss:.3g}")
 
+        if epoch % interval == 0:
+            with torch.no_grad():
+                xh = ddpm.sample(16, (1, 28, 28), accelerator.device)
+            fids.append(frechet_distance(real_images, xh))
+
         # Append epoch and metrics
         epoch_metrics = {
             "epoch": epoch,
             "train_loss": avg_train_loss,
             "val_loss": avg_val_loss
         }
+
         metrics.append(epoch_metrics)
         avg_train_losses.append(avg_train_loss)
         avg_val_losses.append(avg_val_loss)
@@ -114,21 +121,18 @@ def train(config_path, quick_test=False):
             torch.save(ddpm.state_dict(), f"./ddpm_mnist.pth")
             progress_images = ddpm.sample_with_progress(1, (1, 28, 28), accelerator.device, timesteps=timesteps)
             plot_progress(progress_images, timesteps, epoch)
-            # run every other
-            if (epoch+1) % 10 == 0:
-                fids.append(frechet_distance(real_images, xh))
     
     # save metrics
     save_training_results(config, metrics)
 
     # plot saved grids
-    plot_saved_grids(epoch_interval=2, max_epoch=11)
+    plot_saved_grids(epoch_interval=interval, max_epoch=epochs+1)
 
     # plot loss
     plot_loss(avg_train_losses, avg_val_losses)
 
     # plot FID
-    #plot_fid(fids, epochs=epochs)
+    plot_fid(fids, interval, epochs)
 
 if __name__ == "__main__":
     config = load_config("config.yaml")

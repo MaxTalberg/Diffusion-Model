@@ -62,12 +62,11 @@ def plot_loss(avg_train_losses, avg_val_losses):
     plt.legend()
     plt.show()
 
-def plot_fid(fids, epochs=100):
-    # Plot FID over epochs
-    num_epochs = epochs/len(fids)
-    x = np.arange(0, epochs, num_epochs)
-    plt.plot(x, fids, label='FID')
-    plt.xlabel('Epochs')
-    plt.ylabel('Fréchet Inception Distance')
+def plot_fid(fids, interval, epochs):
+    plt.figure(figsize=(10, 5))
+    epochs_plotted = list(range(0, epochs, interval))
+    plt.plot(epochs_plotted, fids)
+    plt.xlabel('Epoch')
+    plt.ylabel('Frechet inception distance')
+    plt.xticks(epochs_plotted) 
     plt.show()
-
