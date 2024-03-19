@@ -14,7 +14,8 @@ CNN:
   time_embeddings: 16  
 
 ddpm:
-  betas: [1e-4, 0.02]
+  beta1: 1e-4
+  beta2: 0.02
   n_T: 1000
 
 optim:

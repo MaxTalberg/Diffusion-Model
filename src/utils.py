@@ -6,14 +6,6 @@ import time
 import os
 
 
-def get_activation(name):
-    if name == "nn.GELU":
-        return torch.nn.GELU
-    elif name == "nn.ReLU":
-        return torch.nn.ReLU
-    else:
-        raise ValueError(f"Activation {name} not found")
-
 def set_seed(seed):
     torch.manual_seed(seed)
     np.random.seed(seed)

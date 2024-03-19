@@ -7,7 +7,8 @@ class DDPM(nn.Module):
     def __init__(
         self,
         gt,
-        betas: Tuple[float, float],
+        beta1: float,
+        beta2: float,
         n_T: int,
         criterion: nn.Module = nn.MSELoss(),
     ) -> None:
@@ -15,7 +16,7 @@ class DDPM(nn.Module):
 
         self.gt = gt
 
-        noise_schedule = ddpm_schedules(betas[0], betas[1], n_T)
+        noise_schedule = ddpm_schedules(float(beta1), float(beta2), n_T)
 
         # `register_buffer` will track these tensors for device placement, but
         # not store them as model parameters. This is useful for constants.

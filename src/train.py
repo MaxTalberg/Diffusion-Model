@@ -13,7 +13,6 @@ from torchvision.utils import save_image, make_grid
 from ddpm import DDPM
 from cnn_model import CNN
 from utils import set_seed
-from utils import get_activation
 from plot_utils import plot_loss
 from config_loader import load_config
 from data_loader import get_dataloaders
@@ -39,7 +38,6 @@ def train_epoch(model, dataloader, optimizer, single_batch=False):
     avg_train_loss = np.mean(train_losses)
     return avg_train_loss
 
-
 def val_epoch(model, dataloader, single_batch=False):
     model.eval()
     val_losses = []
@@ -64,12 +62,11 @@ def train(config_path, quick_test=False):
 
     # load config
     config = load_config(config_path)
+
+    # set seed
     set_seed(config['hyperparameters']['seed'])
 
     # initialise the model
-    ddpm_config = config['ddpm']
-    ddpm_config['betas'] = [float(beta) for beta in ddpm_config['betas']]
-
     gt = CNN(**config['CNN'])
     ddpm = DDPM(gt = gt, **config["ddpm"])
     optim = torch.optim.Adam(ddpm.parameters(), lr=float(config["optim"]["lr"]))
@@ -80,26 +77,18 @@ def train(config_path, quick_test=False):
     
     # prepare the device
     accelerator = Accelerator()
-
-    # We wrap our model, optimizer, and dataloaders with `accelerator.prepare`,
-    # which lets HuggingFace's Accelerate handle the device placement and gradient accumulation.
     ddpm, optim, train_dataloader, test_dataloader = accelerator.prepare(ddpm, optim, train_dataloader, test_dataloader)
     
-    
-    # testing one image
-    data_iter = iter(train_dataloader)
-    single_batch_images, _ = next(data_iter)
-    single_image = single_batch_images[:1].to(accelerator.device)
-
     # Train the model
     epochs = config['hyperparameters']['epochs']
     
     for epoch in range(epochs):
         avg_train_loss = train_epoch(ddpm, train_dataloader, optim, single_batch=quick_test)
         avg_val_loss = val_epoch(ddpm, test_dataloader, single_batch=quick_test)
+
         print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}, Val Loss: {avg_val_loss:.3g}")
 
-        # Append epoch metrics here
+        # Append epoch and metrics
         epoch_metrics = {
             "epoch": epoch,
             "train_loss": avg_train_loss,
@@ -121,7 +110,7 @@ def train(config_path, quick_test=False):
     # save metrics
     save_training_results(config, metrics)
 
-    # plot samples
+    # plot loss
     plot_loss(avg_train_losses, avg_val_losses)
 
 if __name__ == "__main__":
