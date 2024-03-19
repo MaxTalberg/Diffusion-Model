@@ -67,12 +67,10 @@ def train(config_path, quick_test=False):
     set_seed(config['hyperparameters']['seed'])
 
     # initialise the model
-    cnn_config = config['CNN']
-    cnn_config['act'] = get_activation(cnn_config['act'])
     ddpm_config = config['ddpm']
     ddpm_config['betas'] = [float(beta) for beta in ddpm_config['betas']]
 
-    gt = CNN(**cnn_config)
+    gt = CNN(**config['CNN'])
     ddpm = DDPM(gt = gt, **config["ddpm"])
     optim = torch.optim.Adam(ddpm.parameters(), lr=float(config["optim"]["lr"]))
 
@@ -121,8 +119,6 @@ def train(config_path, quick_test=False):
             torch.save(ddpm.state_dict(), f"./ddpm_mnist.pth")
 
     # save metrics
-    if isinstance(cnn_config['act'], type):
-        cnn_config['act'] = cnn_config['act'].__name__
     save_training_results(config, metrics)
 
     # plot samples

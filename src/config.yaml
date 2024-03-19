@@ -12,7 +12,6 @@ CNN:
   kernel_size: 7  
   last_kernel_size: 3  
   time_embeddings: 16  
-  act: "nn.GELU"
 
 ddpm:
   betas: [1e-4, 0.02]
