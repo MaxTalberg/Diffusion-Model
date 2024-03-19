@@ -1,33 +1,23 @@
-import yaml
+import os
 import torch
 import random
 import numpy as np
+import scipy.linalg
 import matplotlib.pyplot as plt
-from torch import nn
 from tqdm import tqdm
 from accelerate import Accelerator
 from torchvision import transforms
-from torch.utils.data import DataLoader
-from torchvision.datasets import MNIST
+from torchvision.transforms import Lambda
+from torchvision.models import inception_v3, Inception_V3_Weights
 from torchvision.utils import save_image, make_grid
 
 from ddpm import DDPM
 from cnn_model import CNN
-from utils import load_config, set_seed
-from plot_utils import plot_loss
+from utils import load_config, set_seed, frechet_distance
+from plot_utils import plot_loss, plot_progress, plot_saved_grids, plot_fid
 from data_loader import get_dataloaders
 from utils import save_training_results
 
-def plot_progress(images, timesteps, epoch, nrow=4):
-    fig, axes = plt.subplots(1, len(images), figsize=(2 * len(images), 2))  # Adjust the figure size as needed
-    for ax, img, timestep in zip(axes, images, timesteps):
-        ax.imshow(img.cpu().numpy().squeeze(), cmap='gray')
-        adjusted_timestep = 1000 - timestep
-        ax.set_title(fr"$Z_{{{adjusted_timestep}}}$", fontsize=10)
-        ax.axis('off')
-
-    plt.savefig(f"./contents/ddpm_progress_{epoch:04d}.png")
-    plt.close(fig) 
 
 def train_epoch(model, dataloader, optimizer, single_batch=False):
     model.train()
@@ -70,6 +60,7 @@ def train(config_path, quick_test=False):
     metrics = []
     avg_train_losses = []
     avg_val_losses = []
+    fids = []
 
     # load config
     config = load_config(config_path)
@@ -87,6 +78,9 @@ def train(config_path, quick_test=False):
     train_dataloader, test_dataloader = get_dataloaders(config["hyperparameters"]["batch_size"], 
                                       config["hyperparameters"]["num_workers"])
     
+    # get real images for FID
+    real_images, _ = next(iter(test_dataloader))
+
     # prepare the device
     accelerator = Accelerator()
     ddpm, optim, train_dataloader, test_dataloader = accelerator.prepare(ddpm, optim, train_dataloader, test_dataloader)
@@ -120,13 +114,21 @@ def train(config_path, quick_test=False):
             torch.save(ddpm.state_dict(), f"./ddpm_mnist.pth")
             progress_images = ddpm.sample_with_progress(1, (1, 28, 28), accelerator.device, timesteps=timesteps)
             plot_progress(progress_images, timesteps, epoch)
+            # run every other
+            if (epoch+1) % 10 == 0:
+                fids.append(frechet_distance(real_images, xh))
     
     # save metrics
     save_training_results(config, metrics)
 
+    # plot saved grids
+    plot_saved_grids(epoch_interval=2, max_epoch=11)
+
     # plot loss
     plot_loss(avg_train_losses, avg_val_losses)
 
+    # plot FID
+    #plot_fid(fids, epochs=epochs)
 
 if __name__ == "__main__":
     config = load_config("config.yaml")
