@@ -98,7 +98,10 @@ def train(config_path, quick_test=False):
         if epoch % interval == 0:
             with torch.no_grad():
                 xh = ddpm.sample(16, (1, 28, 28), accelerator.device)
-            fids.append(frechet_distance(real_images, xh))
+            fid_score = frechet_distance(real_images, xh)
+            fid_score = float(fid_score)
+            fids.append(fid_score)
+            epoch_metrics["fid_score"] = fid_score
 
         # Append epoch and metrics
         epoch_metrics = {
