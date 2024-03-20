@@ -1,0 +1,6 @@
+# Ignore directories
+contents/
+metrics/
+
+# Ignore pth files
+*.pth

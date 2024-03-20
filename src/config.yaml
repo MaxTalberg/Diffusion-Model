@@ -5,7 +5,7 @@ hyperparameters:
   num_workers: 8
   epochs: 100
   timesteps: [0, 1, 100, 250, 500, 750, 800, 900, 999, 1000]
-  interval: 10
+  interval: 9
 
 CNN:
   in_channels: 1  
