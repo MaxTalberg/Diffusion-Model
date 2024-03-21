@@ -81,7 +81,7 @@ def train(config_path, quick_test=False):
                                       config["hyperparameters"]["num_workers"])
     
     # get real images for FID
-    real_images, _ = next(iter(test_dataloader))
+    real_images, _ = next(iter(train_dataloader))
 
     # prepare the device
     accelerator = Accelerator()
@@ -98,11 +98,12 @@ def train(config_path, quick_test=False):
 
         if epoch % interval == 0:
             with torch.no_grad():
-                xh = ddpm.sample(16, (1, 28, 28), accelerator.device)
+                xh = ddpm.sample(config["hyperparameters"]["batch_size"], (1, 28, 28), accelerator.device)
             fid_score = frechet_distance(real_images, xh)
             fid_score = float(fid_score)
             fids.append(fid_score)
             epoch_metrics["fid_score"] = fid_score
+            print(f"FID Score {fid_score}")
 
         # Append epoch and metrics
         epoch_metrics = {
