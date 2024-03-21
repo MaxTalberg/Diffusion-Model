@@ -1,19 +1,13 @@
-import os
 import torch
-import random
 import numpy as np
-import scipy.linalg
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 from accelerate import Accelerator
-from torchvision import transforms
-from torchvision.transforms import Lambda
 from torchvision.utils import save_image, make_grid
 
 from ddpm import DDPM
 from cnn_model import CNN
 from utils import load_config, set_seed, frechet_distance
-from plot_utils import plot_loss, plot_progress, plot_saved_grids, plot_fid
+from plot_utils import plot_loss, plot_saved_grids, plot_fid, save_and_plot_samples
 from data_loader import get_dataloaders
 from utils import save_training_results
 
@@ -26,7 +20,7 @@ def train_epoch(model, dataloader, optimizer, single_batch=False):
 
     for x, _ in pbar:
         optimizer.zero_grad()
-        loss, zt = model.forward_blur(x)
+        loss, zt = model.forward(x)
         loss.backward()
         optimizer.step()
 
@@ -36,6 +30,7 @@ def train_epoch(model, dataloader, optimizer, single_batch=False):
         if single_batch:
             break  # Exit after first batch if single_batch is True
 
+    # Calculate average loss (per epoch)
     avg_train_loss = np.mean(train_losses)
     return avg_train_loss
 
@@ -76,18 +71,24 @@ def train(config_path, quick_test=False):
     epochs = config['hyperparameters']['epochs']
     
     for epoch in range(epochs):
+
+        # training loss
         avg_train_loss = train_epoch(ddpm, train_dataloader, optim, single_batch=quick_test)
 
-        print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}")
+        # generate samples
+        with torch.no_grad():
+            xh, progress = ddpm.sample(16, (1, 28, 28), accelerator.device, timesteps=timesteps)
+            save_and_plot_samples(xh, progress, epoch, ddpm, timesteps)
+        
+            if epoch % interval == 0:
+                fid_score = frechet_distance(real_images, xh)
+                fid_score = float(fid_score)
+                fids.append(fid_score)
+                epoch_metrics["fid_score"] = fid_score
+                print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}FID Score {fid_score}")
+            else:
+                print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}")
 
-        '''if epoch % interval == 0:
-            with torch.no_grad():
-                xh = ddpm.sample(config["hyperparameters"]["batch_size"], (1, 28, 28), accelerator.device)
-            fid_score = frechet_distance(real_images, xh)
-            fid_score = float(fid_score)
-            fids.append(fid_score)
-            epoch_metrics["fid_score"] = fid_score
-            print(f"FID Score {fid_score}")'''
 
         # Append epoch and metrics
         epoch_metrics = {
@@ -98,29 +99,14 @@ def train(config_path, quick_test=False):
         metrics.append(epoch_metrics)
         avg_train_losses.append(avg_train_loss)
 
-        # generate samples
-        with torch.no_grad():
-            xh = ddpm.sample(16, (1, 28, 28), accelerator.device)
-            grid = make_grid(xh, nrow=4)
-            # Save samples to `./contents` directory
-            save_image(grid, f"./contents/ddpm_sample_{epoch:04d}.png")
-            # save model
-            torch.save(ddpm.state_dict(), f"./ddpm_mnist.pth")
-            progress_images = ddpm.sample_with_progress(1, (1, 28, 28), accelerator.device, timesteps=timesteps)
-            plot_progress(progress_images, timesteps, epoch)
-    
     # save metrics
     save_training_results(config, metrics)
 
-    # plot saved grids
+    # plots
     plot_saved_grids(epoch_interval=interval, max_epoch=epochs+1)
-
-    # plot loss
     plot_loss(avg_train_losses)
-
-    # plot FID
-    '''plot_fid(fids, interval, epochs)'''
+    plot_fid(fids, interval, epochs)
 
 if __name__ == "__main__":
     config = load_config("config.yaml")
-    train("config.yaml", quick_test=True)  # Set to False for full training
+    train("config.yaml", quick_test=False)  # Set to False for full training

@@ -1,21 +1,42 @@
 import os
 import time
+import torch
 import numpy as np
 import matplotlib.pyplot as plt
-
+from torchvision.utils import make_grid, save_image
 
 from PIL import Image
 
-def plot_progress(images, timesteps, epoch, nrow=4):
-    fig, axes = plt.subplots(1, len(images), figsize=(2 * len(images), 2))
-    for ax, img, timestep in zip(axes, images, timesteps):
-        ax.imshow(img.cpu().numpy().squeeze(), cmap='gray')
-        adjusted_timestep = 1000 - timestep
+
+
+def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./contents', model_path='./', nrow=4):
+    # Ensure the save directory exists
+    os.makedirs(save_path, exist_ok=True)
+
+    # Save the generated sample grid
+    grid = make_grid(xh, nrow=nrow)
+    sample_filename = f"{save_path}/ddpm_sample_epoch_{epoch:04d}.png"
+    save_image(grid, sample_filename)
+
+    # Save the model state
+    model_filename = os.path.join(model_path, "ddpm_mnist.pth")
+    torch.save(model.state_dict(), model_filename)
+
+    # Plot and save progress images with titles for each timestep
+    # Extract the first image from each tensor in progress to represent each timestep
+    representative_images = [tensor[0] for tensor in progress]  # List of first images from each tensor
+    fig, axes = plt.subplots(1, len(representative_images), figsize=(2 * len(representative_images), 2))
+    for ax, img, timestep in zip(axes, representative_images, timesteps):
+        np_img = img.cpu().numpy().squeeze()
+        ax.imshow(np_img, cmap='gray')
+        adjusted_timestep = 1000 - timestep  # Adjust timestep if necessary
         ax.set_title(fr"$Z_{{{adjusted_timestep}}}$", fontsize=10)
         ax.axis('off')
 
-    plt.savefig(f"./contents/ddpm_progress_{epoch:04d}.png")
+    progress_filename = f"{save_path}/progress_epoch_{epoch:04d}.png"
+    plt.savefig(progress_filename, bbox_inches='tight')
     plt.close(fig)
+
 
 def plot_saved_grids(epoch_interval=10, max_epoch=None, save_dir="./contents"):
 
