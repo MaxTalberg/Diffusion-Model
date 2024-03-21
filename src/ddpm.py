@@ -3,6 +3,10 @@ import torch.nn as nn
 from typing import Tuple
 from ddpm_schedule import ddpm_schedules
 
+from PIL import Image
+from torchvision.transforms import v2
+
+
 class DDPM(nn.Module):
     def __init__(
         self,
@@ -39,7 +43,7 @@ class DDPM(nn.Module):
         # This is the z_t, which is sqrt(alphabar) x_0 + sqrt(1-alphabar) * eps
         # We should predict the "error term" from this z_t. Loss is what we return.
 
-        return self.criterion(eps, self.gt(z_t, t / self.n_T))
+        return self.criterion(eps, self.gt(z_t, t / self.n_T)), z_t
 
     def sample(self, n_sample: int, size, device) -> torch.Tensor:
         """Algorithm 18.2 in Prince"""
@@ -84,3 +88,30 @@ class DDPM(nn.Module):
 
         return progress_images
     
+    def forward_blur(self, x: torch.Tensor) -> torch.Tensor:
+
+        # random timestep
+        t = torch.randint(1, self.n_T, (x.shape[0],), device=x.device)
+
+        # initialise blurrer
+        blurrer = v2.GaussianBlur(kernel_size=(5,9), sigma=(0.1, 2.))
+
+        # blur error term
+        blurred_z_t = blurrer(x)
+        blurred_eps = blurred_z_t - x
+
+                
+        alpha_t = self.alpha_t[t, None, None, None]  # Get right shape for broadcasting
+
+
+        z_t = torch.sqrt(alpha_t) * x + torch.sqrt(1 - alpha_t) * blurred_eps
+
+        
+
+        return self.criterion(self.gt(x, t / self.n_T), z_t), z_t
+    
+    def sample_blur(self, n_sample: int, size, device) -> torch.Tensor:
+        
+
+
+        return z_t

@@ -51,12 +51,11 @@ def plot_saved_grids(epoch_interval=10, max_epoch=None, save_dir="./contents"):
     plt.savefig(f"./contents/ddpm_sample_{int(time.time())}.png")
     plt.close(fig)
 
-def plot_loss(avg_train_losses, avg_val_losses):
+def plot_loss(avg_train_losses):
 
     # Plotting
     plt.figure(figsize=(10, 6))
     plt.plot(avg_train_losses, label='Average Train Loss per Epoch')
-    plt.plot(avg_val_losses, label='Average Validation Loss per Epoch')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()

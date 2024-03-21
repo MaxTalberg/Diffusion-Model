@@ -8,7 +8,6 @@ from tqdm import tqdm
 from accelerate import Accelerator
 from torchvision import transforms
 from torchvision.transforms import Lambda
-from torchvision.models import inception_v3, Inception_V3_Weights
 from torchvision.utils import save_image, make_grid
 
 from ddpm import DDPM
@@ -26,7 +25,7 @@ def train_epoch(model, dataloader, optimizer, single_batch=False):
 
     for x, _ in pbar:
         optimizer.zero_grad()
-        loss = model(x)
+        loss, zt = model.forward_blur(x)
         loss.backward()
         optimizer.step()
 
@@ -39,27 +38,12 @@ def train_epoch(model, dataloader, optimizer, single_batch=False):
     avg_train_loss = np.mean(train_losses)
     return avg_train_loss
 
-def val_epoch(model, dataloader, single_batch=False):
-    model.eval()
-    val_losses = []
-
-    with torch.no_grad():
-        for x, _ in dataloader:
-            loss = model(x)
-            val_losses.append(loss.item())
-
-            if single_batch:
-                break
-
-    avg_val_loss = np.mean(val_losses)
-    return avg_val_loss
 
 def train(config_path, quick_test=False):
 
     # store metrics
     metrics = []
     avg_train_losses = []
-    avg_val_losses = []
     fids = []
     epoch_metrics = {}
 
@@ -92,9 +76,8 @@ def train(config_path, quick_test=False):
     
     for epoch in range(epochs):
         avg_train_loss = train_epoch(ddpm, train_dataloader, optim, single_batch=quick_test)
-        avg_val_loss = val_epoch(ddpm, test_dataloader, single_batch=quick_test)
 
-        print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}, Val Loss: {avg_val_loss:.3g}")
+        print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}")
 
         if epoch % interval == 0:
             with torch.no_grad():
@@ -108,13 +91,11 @@ def train(config_path, quick_test=False):
         # Append epoch and metrics
         epoch_metrics = {
             "epoch": epoch,
-            "train_loss": avg_train_loss,
-            "val_loss": avg_val_loss
+            "train_loss": avg_train_loss
         }
 
         metrics.append(epoch_metrics)
         avg_train_losses.append(avg_train_loss)
-        avg_val_losses.append(avg_val_loss)
 
         # generate samples
         with torch.no_grad():
@@ -134,7 +115,7 @@ def train(config_path, quick_test=False):
     plot_saved_grids(epoch_interval=interval, max_epoch=epochs+1)
 
     # plot loss
-    plot_loss(avg_train_losses, avg_val_losses)
+    plot_loss(avg_train_losses)
 
     # plot FID
     plot_fid(fids, interval, epochs)
