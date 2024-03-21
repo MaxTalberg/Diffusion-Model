@@ -21,6 +21,7 @@ from utils import save_training_results
 def train_epoch(model, dataloader, optimizer, single_batch=False):
     model.train()
     train_losses = []
+
     pbar = tqdm(dataloader, desc='Training', total=(1 if single_batch else None))
 
     for x, _ in pbar:
@@ -34,7 +35,7 @@ def train_epoch(model, dataloader, optimizer, single_batch=False):
         
         if single_batch:
             break  # Exit after first batch if single_batch is True
-    
+
     avg_train_loss = np.mean(train_losses)
     return avg_train_loss
 
@@ -79,14 +80,14 @@ def train(config_path, quick_test=False):
 
         print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}")
 
-        if epoch % interval == 0:
+        '''if epoch % interval == 0:
             with torch.no_grad():
                 xh = ddpm.sample(config["hyperparameters"]["batch_size"], (1, 28, 28), accelerator.device)
             fid_score = frechet_distance(real_images, xh)
             fid_score = float(fid_score)
             fids.append(fid_score)
             epoch_metrics["fid_score"] = fid_score
-            print(f"FID Score {fid_score}")
+            print(f"FID Score {fid_score}")'''
 
         # Append epoch and metrics
         epoch_metrics = {
@@ -118,8 +119,8 @@ def train(config_path, quick_test=False):
     plot_loss(avg_train_losses)
 
     # plot FID
-    plot_fid(fids, interval, epochs)
+    '''plot_fid(fids, interval, epochs)'''
 
 if __name__ == "__main__":
     config = load_config("config.yaml")
-    train("config.yaml", quick_test=False)  # Set to False for full training
+    train("config.yaml", quick_test=True)  # Set to False for full training
