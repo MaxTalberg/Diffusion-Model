@@ -61,6 +61,7 @@ def train(config_path, quick_test=False):
     avg_train_losses = []
     avg_val_losses = []
     fids = []
+    epoch_metrics = {}
 
     # load config
     config = load_config(config_path)
