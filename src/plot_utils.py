@@ -8,7 +8,6 @@ from torchvision.utils import make_grid, save_image
 from PIL import Image
 
 
-
 def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./contents', model_path='./', nrow=4):
     # Ensure the save directory exists
     os.makedirs(save_path, exist_ok=True)
@@ -36,7 +35,6 @@ def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./co
     progress_filename = f"{save_path}/progress_epoch_{epoch:04d}.png"
     plt.savefig(progress_filename, bbox_inches='tight')
     plt.close(fig)
-
 
 def plot_saved_grids(epoch_interval=10, max_epoch=None, save_dir="./contents"):
 

@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from ddpm_schedule import ddpm_schedules
 
-from PIL import Image
 from torchvision.transforms import v2
 
 
@@ -69,7 +68,6 @@ class DDPM(nn.Module):
 
         return z_t, progress
 
-
     def forward_blur(self, x: torch.Tensor) -> torch.Tensor:
 
         # random timestep
@@ -106,7 +104,6 @@ class DDPM(nn.Module):
 
         return z_T
     
-
     def sample_blur(self, x, n_sample: int, device) -> torch.Tensor:
 
 
@@ -133,7 +130,6 @@ class DDPM(nn.Module):
 
         return z_t
     
- 
     def sample_blur_progress(self, x, n_sample: int, device, timesteps=None) -> torch.Tensor:
 
         if timesteps is None:
@@ -164,8 +160,6 @@ class DDPM(nn.Module):
 
         return progress_images
     
-
-        
     '''def max_blur(self, x: torch.Tensor) -> torch.Tensor:
 
         # initialise blurrer

@@ -1,27 +1,13 @@
 import torch
 import numpy as np
-import random
 import json
 import time
 import os
-import yaml
 import scipy.linalg
 from torchvision import transforms
 from torchvision.transforms import Lambda
 from torchvision.models import inception_v3, Inception_V3_Weights
 
-
-def load_config(config_path):
-    with open(config_path, "r") as file:
-        config = yaml.safe_load(file)
-    return config
-
-def set_seed(seed):
-    torch.manual_seed(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
 
 def save_training_results(config, metrics):
     results = {
@@ -72,7 +58,6 @@ def get_features(images, model = inception_model, batch_size=32):
             features.append(batch_features.cpu())
         features = torch.cat(features, 0)
     return features
-
 
 def frechet_distance(real_images, generated_images, inception_model=inception_model):
     real_features = get_features(real_images, inception_model)

@@ -23,7 +23,6 @@ class CNNBlock(nn.Module):
     def forward(self, x):
         return self.net(x)
     
-
 class CNN(nn.Module):
     def __init__(
         self,
@@ -104,3 +103,4 @@ class CNN(nn.Module):
             embed = block(embed)
 
         return embed
+    
