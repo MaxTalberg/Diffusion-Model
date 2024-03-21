@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from typing import Tuple
 from ddpm_schedule import ddpm_schedules
 
 from PIL import Image

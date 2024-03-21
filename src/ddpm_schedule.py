@@ -1,6 +1,5 @@
-from typing import Dict
-
 import torch
+from typing import Dict
 
 def ddpm_schedules(beta1: float, beta2: float, T: int) -> Dict[str, torch.Tensor]:
     """Returns pre-computed schedules for DDPM sampling with a linear noise schedule."""
