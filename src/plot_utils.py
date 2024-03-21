@@ -7,8 +7,25 @@ from torchvision.utils import make_grid, save_image
 
 from PIL import Image
 
+def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./contents', model_path='./metrics', nrow=4):
+    """
+    Plots saved grids of generated images at specified epoch intervals.
 
-def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./contents', model_path='./', nrow=4):
+    Parameters
+    ----------
+    epoch_interval : int, optional
+        Interval between epochs to plot, by default 10.
+    max_epoch : int, optional
+        The maximum epoch to plot. If None, defaults to the highest epoch found, by default None.
+    save_dir : str, optional
+        The directory from which to load the saved grids, by default "./contents".
+
+    Notes
+    -----
+    This function loads and plots saved grids of generated images from the specified directory. Each subplot is titled
+    with the corresponding epoch. The function is useful for visualizing the progression of generated images over
+    training epochs.
+    """
     # Ensure the save directory exists
     os.makedirs(save_path, exist_ok=True)
 
@@ -36,43 +53,21 @@ def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./co
     plt.savefig(progress_filename, bbox_inches='tight')
     plt.close(fig)
 
-def plot_saved_grids(epoch_interval=10, max_epoch=None, save_dir="./contents"):
-
-    images = []
-    titles = []
-
-    # Determine the range of epochs to include
-    epochs = range(0, max_epoch + 1, epoch_interval) if max_epoch is not None else range(0, 1001, epoch_interval)
-
-    for epoch in epochs:
-        # Construct the filename
-        filename = f"ddpm_sample_{epoch:04d}.png"
-        filepath = os.path.join(save_dir, filename)
-        # Load the image if it exists
-        if os.path.exists(filepath):
-            img = Image.open(filepath)
-            images.append(img)
-            titles.append(f"Epoch = {epoch+1}")
-
-
-    # Create a single figure with multiple subplots
-    fig, axes = plt.subplots(1, len(images), figsize=(2 * len(images), 2)) 
-    
-    # if only one image
-    if len(images) == 1:
-        axes = [axes]
-    
-    for ax, img, title in zip(axes, images, titles):
-        ax.imshow(img)
-        ax.set_title(title, fontsize=10)
-        ax.axis('off')
-    
-    plt.savefig(f"./contents/ddpm_sample_{int(time.time())}.png")
-    plt.close(fig)
-
 def plot_loss(avg_train_losses):
+    """
+    Plots the average training loss per epoch.
 
-    # Plotting
+    Parameters
+    ----------
+    avg_train_losses : list of float
+        A list containing the average training loss for each epoch.
+
+    Notes
+    -----
+    This function plots the average training loss over epochs, providing insight into how the model's
+    training is progressing in terms of minimizing the loss over time.
+    """
+    
     plt.figure(figsize=(10, 6))
     plt.plot(avg_train_losses, label='Average Train Loss per Epoch')
     plt.xlabel('Epoch')
@@ -81,10 +76,31 @@ def plot_loss(avg_train_losses):
     plt.show()
 
 def plot_fid(fids, interval, epochs):
+    """
+    Plots the Frechet Inception Distance (FID) score over epochs.
+
+    Parameters
+    ----------
+    fids : list of float
+        A list containing the FID scores at specified intervals.
+    interval : int
+        The interval at which FID scores were calculated.
+    epochs : int
+        The total number of epochs.
+
+    Notes
+    -----
+    This function plots the FID scores, which are calculated at specified intervals over the total number of epochs. 
+    The FID score is a measure of similarity between two sets of images, and in this context, it usually measures how 
+    similar generated images are to real images. Lower FID scores indicate better image quality and feature similarity.
+    """
+    
     plt.figure(figsize=(10, 5))
-    epochs_plotted = list(range(0, epochs, interval))
-    plt.plot(epochs_plotted, fids)
+    epochs_plotted = list(range(0, epochs + 1, interval))
+    plt.plot(epochs_plotted, fids, marker='o')
     plt.xlabel('Epoch')
-    plt.ylabel('Frechet inception distance')
-    plt.xticks(epochs_plotted) 
+    plt.ylabel('FID Score')
+    plt.title('FID Score over Epochs')
+    plt.xticks(epochs_plotted)
+    plt.grid(True)
     plt.show()
