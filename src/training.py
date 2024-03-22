@@ -88,18 +88,22 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, quick
         avg_train_loss = train_epoch(ddpm, train_dataloader, optim, single_batch=quick_test)
         print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}")
 
+        epoch_metrics = {"epoch": epoch, "train_loss": avg_train_loss}
+
         with torch.no_grad():
             xh, progress = ddpm.sample(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
-            save_and_plot_samples(xh, progress, epoch, ddpm, config["hyperparameters"]["timesteps"])
+            save_and_plot_samples(xh, progress, epoch, ddpm, config["hyperparameters"]["timesteps"], config["ddpm"]["n_T"])
 
             if epoch % config["hyperparameters"]["interval"] == 0:
                 fid_score = frechet_distance(real_images, xh)
+                fid_score = float(fid_score)
                 fids.append(fid_score)
+                epoch_metrics["fid_score"] = fid_score
                 print(f"FID Score: {fid_score}")
 
-        metrics.append({"epoch": epoch, "train_loss": avg_train_loss})
+        metrics.append(epoch_metrics)
 
     save_training_results(config, metrics)
     plot_loss(avg_train_losses)
-    plot_fid(fids, config["hyperparameters"]["interval"], config['hyperparameters']['epochs'])
+    #plot_fid(fids, config["hyperparameters"]["interval"], config['hyperparameters']['epochs'])
 

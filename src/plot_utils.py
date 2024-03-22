@@ -1,13 +1,11 @@
 import os
-import time
 import torch
-import numpy as np
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid, save_image
 
 from PIL import Image
 
-def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./contents', model_path='./metrics', nrow=4):
+def save_and_plot_samples(xh, progress, epoch, model, timesteps, max_timestep, save_path='./contents', model_path='./metrics', nrow=4):
     """
     Plots saved grids of generated images at specified epoch intervals.
 
@@ -45,7 +43,7 @@ def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./co
     for ax, img, timestep in zip(axes, representative_images, timesteps):
         np_img = img.cpu().numpy().squeeze()
         ax.imshow(np_img, cmap='gray')
-        adjusted_timestep = 1000 - timestep  # Adjust timestep if necessary
+        adjusted_timestep = int(max_timestep) - timestep  # Adjust timestep if necessary
         ax.set_title(fr"$Z_{{{adjusted_timestep}}}$", fontsize=10)
         ax.axis('off')
 
@@ -96,7 +94,7 @@ def plot_fid(fids, interval, epochs):
     """
     
     plt.figure(figsize=(10, 5))
-    epochs_plotted = list(range(0, epochs + 1, interval))
+    epochs_plotted = list(range(0, epochs, interval))
     plt.plot(epochs_plotted, fids, marker='o')
     plt.xlabel('Epoch')
     plt.ylabel('FID Score')
