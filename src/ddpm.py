@@ -51,8 +51,6 @@ class DDPM(nn.Module):
         progress = []
 
         for i in range(self.n_T, 0, -1):
-            if i in timesteps:
-                progress.append(z_t.clone())
 
             alpha_t = self.alpha_t[i]
             beta_t = self.beta_t[i]
@@ -60,6 +58,10 @@ class DDPM(nn.Module):
             # First line of loop:
             z_t -= (beta_t / torch.sqrt(1 - alpha_t)) * self.gt(z_t, (i/self.n_T) * _one)
             z_t /= torch.sqrt(1 - beta_t)
+
+            if i in timesteps:
+                print(i)
+                progress.append(z_t.clone())
 
             if i > 1:
                 # Last line of loop:
