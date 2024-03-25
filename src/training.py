@@ -4,7 +4,7 @@ from  tqdm import tqdm
 
 
 from utils import save_training_results, frechet_distance
-from plot_utils import save_and_plot_samples, plot_loss, plot_fid
+from plot_utils import save_and_plot_samples, plot_loss, plot_progress
 
 
 def train_epoch(model, dataloader, optimizer, cold_diff=False, single_batch=False):
@@ -56,7 +56,7 @@ def train_epoch(model, dataloader, optimizer, cold_diff=False, single_batch=Fals
     return avg_train_loss
 
 
-def train(config, ddpm, optim, train_dataloader, accelerator, real_images, cold_diff=False, quick_test=False):
+def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_score = False, cold_diff=False, quick_test=False):
     """
     Executes the training process.
 
@@ -96,16 +96,18 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, cold_
         with torch.no_grad():
             if cold_diff:
                 xh, progress = ddpm.sample_blur(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
+                plot_progress(progress, config["hyperparameters"]["timesteps"])
             else:
                 xh, progress = ddpm.sample(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
-            save_and_plot_samples(xh, progress, epoch, ddpm, config["hyperparameters"]["timesteps"], config["ddpm"]["n_T"])
-
-            if epoch % config["hyperparameters"]["interval"] == 0:
-                fid_score = frechet_distance(real_images, xh)
-                fid_score = float(fid_score)
-                fids.append(fid_score)
-                epoch_metrics["fid_score"] = fid_score
-                print(f"FID Score: {fid_score}")
+                save_and_plot_samples(xh, progress, epoch, ddpm, config["hyperparameters"]["timesteps"])
+            
+            if fid_score:
+                if epoch % config["hyperparameters"]["interval"] == 0:
+                    fid_score = frechet_distance(real_images, xh)
+                    fid_score = float(fid_score)
+                    fids.append(fid_score)
+                    epoch_metrics["fid_score"] = fid_score
+                    print(f"FID Score: {fid_score}")
 
         metrics.append(epoch_metrics)
 

@@ -2,10 +2,42 @@ import os
 import torch
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid, save_image
+import torchvision
+import numpy as np
 
 from PIL import Image
 
-def save_and_plot_samples(xh, progress, epoch, model, timesteps, max_timestep, save_path='./contents', model_path='./metrics', nrow=4):
+def plot_progress(progress, timesteps):
+    print("Progress content before sorting:")
+    for idx, (t, img) in enumerate(progress):
+        print(f"Index: {idx}, Timestep: {t}, Image tensor shape: {img.shape}")
+    # Sort the progress list based on timesteps
+    sorted_progress = sorted(progress, key=lambda x: timesteps.index(x[0]))
+    
+    # Create a list of images from the progress list
+    images = [img_tensor[0] for _, img_tensor in progress]  # Extract only the first image from each mini-batch
+
+    # Then create the grid
+    grid = torchvision.utils.make_grid(images, nrow=len(images))
+    # Convert grid to a numpy array
+    np_grid = grid.cpu().numpy()
+    
+    # Transpose numpy array to (height, width, channels) from (channels, height, width)
+    np_grid_transposed = np.transpose(np_grid, (1, 2, 0))
+    
+    # Plot the images
+    plt.figure(figsize=(len(images) * 2, 2))
+    plt.imshow(np_grid_transposed, interpolation='nearest')
+    plt.axis('off')
+    
+    # Set titles for subplots
+    for i, (t, _) in enumerate(sorted_progress):
+        plt.text(i * images[0].shape[2], -10, f"t={t}", ha='center')
+    
+    plt.show()
+
+
+def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./contents', model_path='./metrics', nrow=4):
     """
     Plots saved grids of generated images at specified epoch intervals.
 
@@ -43,7 +75,7 @@ def save_and_plot_samples(xh, progress, epoch, model, timesteps, max_timestep, s
     for ax, img, timestep in zip(axes, representative_images, timesteps):
         np_img = img.cpu().numpy().squeeze()
         ax.imshow(np_img, cmap='gray')
-        adjusted_timestep = int(max_timestep) - timestep  # Adjust timestep if necessary
+        adjusted_timestep = int(timestep) # Adjust timestep if necessary
         ax.set_title(fr"$Z_{{{adjusted_timestep}}}$", fontsize=10)
         ax.axis('off')
 
