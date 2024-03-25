@@ -3,9 +3,9 @@ hyperparameters:
   batch_size: 128
   num_workers: 8
   epochs: 100
-  # timesteps: [0, 6300, 10300, 13300, 16300, 17300, 18000, 18200, 18299, 18300]
-  timesteps: [0, 1, 5, 10, 40, 140, 540, 1000, 1840]
-  interval: 9
+  #   timesteps: [0, 1, 5, 10, 40, 140, 540, 1000, 1839, 1840] [
+  timesteps: [0, 1, 10, 50, 100, 250, 500, 750, 999, 1000]
+  interval: 2
 
 CNN:
   in_channels: 1  
@@ -22,3 +22,4 @@ ddpm:
 
 optim:
   lr: 2e-4
+  
