@@ -7,7 +7,7 @@ from utils import save_training_results, frechet_distance
 from plot_utils import save_and_plot_samples, plot_loss, plot_fid
 
 
-def train_epoch(model, dataloader, optimizer, single_batch=False):
+def train_epoch(model, dataloader, optimizer, cold_diff=False, single_batch=False):
     """
     Performs a single epoch of training.
 
@@ -39,7 +39,10 @@ def train_epoch(model, dataloader, optimizer, single_batch=False):
 
     for x, _ in pbar:
         optimizer.zero_grad()
-        loss, _ = model.forward(x)  # Assume model.forward returns a tuple (loss, some_other_value)
+        if cold_diff:
+            loss, _ = model.forward_blur(x)
+        else:
+            loss, _ = model.forward(x)  # Assume model.forward returns a tuple (loss, some_other_value)
         loss.backward()
         optimizer.step()
 
@@ -53,7 +56,7 @@ def train_epoch(model, dataloader, optimizer, single_batch=False):
     return avg_train_loss
 
 
-def train(config, ddpm, optim, train_dataloader, accelerator, real_images, quick_test=False):
+def train(config, ddpm, optim, train_dataloader, accelerator, real_images, cold_diff=False, quick_test=False):
     """
     Executes the training process.
 
@@ -85,13 +88,16 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, quick
     fids = []
 
     for epoch in range(config['hyperparameters']['epochs']):
-        avg_train_loss = train_epoch(ddpm, train_dataloader, optim, single_batch=quick_test)
+        avg_train_loss = train_epoch(ddpm, train_dataloader, optim, cold_diff, single_batch=quick_test)
         print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}")
 
         epoch_metrics = {"epoch": epoch, "train_loss": avg_train_loss}
 
         with torch.no_grad():
-            xh, progress = ddpm.sample(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
+            if cold_diff:
+                xh, progress = ddpm.sample_blur(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
+            else:
+                xh, progress = ddpm.sample(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
             save_and_plot_samples(xh, progress, epoch, ddpm, config["hyperparameters"]["timesteps"], config["ddpm"]["n_T"])
 
             if epoch % config["hyperparameters"]["interval"] == 0:

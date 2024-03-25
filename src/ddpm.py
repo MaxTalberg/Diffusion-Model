@@ -3,7 +3,8 @@ import torch.nn as nn
 from ddpm_schedule import ddpm_schedules
 
 from torchvision.transforms import v2
-
+from data_loader import get_dataloaders
+import math
 
 class DDPM(nn.Module):
     def __init__(
@@ -70,109 +71,71 @@ class DDPM(nn.Module):
 
         return z_t, progress
 
+
+    def blurrer(self, t, item = True):
+        sigma_base = 0.2
+        sigma_scale = 0.2
+        if item:
+            sigma_value = sigma_base + sigma_scale * math.log(t.item() + 1)
+        else:
+            sigma_value = sigma_base + sigma_scale * math.log(t + 1)
+
+        return v2.GaussianBlur(kernel_size=(5,9), sigma=(sigma_value))
+    
     def forward_blur(self, x: torch.Tensor) -> torch.Tensor:
 
         # random timestep
         t = torch.randint(1, self.n_T, (x.shape[0],), device=x.device)
+        
+        # hold blurred images
+        blurred_images = []
 
         # initialise blurrer
-        blurrer = v2.GaussianBlur(kernel_size=(5,9), sigma=(0.1, 2.))
+        for i in range(x.shape[0]):
+            blurrer = self.blurrer(t[i])
+            blurred_img = blurrer(x[i].unsqueeze(0))
+            blurred_images.append(blurred_img.squeeze(0))
+            
 
-        # blur error term
-        blurred_z_t = blurrer(x)
-        blurred_eps = blurred_z_t - x
-
-                
-        alpha_t = self.alpha_t[t, None, None, None]  # Get right shape for broadcasting
-
-
-        z_t = torch.sqrt(alpha_t) * x + torch.sqrt(1 - alpha_t) * blurred_eps
-
-
-        return self.criterion(self.gt(x, t / self.n_T), z_t), z_t
-
+        blurred_z_t = torch.stack(blurred_images)
+   
+        return self.criterion(x, self.gt(blurred_z_t, t / self.n_T)), blurred_z_t
+    
     def max_blur(self, x: torch.Tensor) -> torch.Tensor:
 
-        # initialise blurrer
-        blurrer = v2.GaussianBlur(kernel_size=(5,9), sigma=(0.1, 2.))
+        sigma_base = 0.2
+        sigma_scale = 0.2
+        sigma_value = sigma_base + sigma_scale * math.log(self.n_T + 1)
+        blurrer = v2.GaussianBlur(kernel_size=(5,9), sigma=(sigma_value))
 
-        # blur error term
-        blurred_z_t = blurrer(x)
-        blurred_eps = blurred_z_t - x
-
-        alpha_t = self.alpha_t[self.n_T, None, None, None]
-
-        z_T = torch.sqrt(alpha_t) * x + torch.sqrt(1 - alpha_t) * blurred_eps
-
-        return z_T
+        return blurrer(x)
     
-    def sample_blur(self, x, n_sample: int, device) -> torch.Tensor:
+    def sample_blur(self, n_sample: int, size, device, timesteps=None) -> torch.Tensor:
 
+        # max z_t
+        train_dataloader, _ = get_dataloaders(16, 8)
+        # get images
+        x, _ = next(iter(train_dataloader))
+        # blur images
+        blurrer = self.blurrer(self.n_T, item=False)
+        z_t = blurrer(x).float().to(device)
+        print(z_t.shape)
 
         # initialise Z_T
         _one = torch.ones(n_sample, device=device)
-        #z_t = torch.zeros(n_sample, *size, device=device)
-        z_t = self.max_blur(x)
+        progress = []
 
         for i in range(self.n_T, 0, -1):
-            alpha_t = self.alpha_t[i]
-            beta_t = self.beta_t[i]
-
-            z_t0 = z_t.clone()
-
-            # deblurring step
-            z_t -= (beta_t / torch.sqrt(1 - alpha_t)) * self.gt(z_t, (i/self.n_T) * _one)
-            z_t /= torch.sqrt(1 - beta_t)
 
 
-            if i > 1:
-                # correction step
-                correction_step = (torch.sqrt(beta_t) * torch.randn_like(z_t)) - (torch.sqrt(beta_t) * torch.randn_like(z_t0))
-                z_t += correction_step
+            x0_pred = self.gt(z_t, (i/self.n_T) * _one)
 
-        return z_t
-    
-    def sample_blur_progress(self, x, n_sample: int, device, timesteps=None) -> torch.Tensor:
-
-        if timesteps is None:
-            timesteps = [self.n_T]  # Default to only the final step
-        
-        _one = torch.ones(n_sample, device=device)
-        z_t = self.max_blur(x)
-        progress_images = []
-        
-        for i in range(self.n_T, 0, -1):
+            # initialise blurrer
+            blurrer_t = self.blurrer(i, item=False)
+            blurrer_tm1 = self.blurrer(i-1, item=False)
+            z_t = (z_t - blurrer_t(x0_pred) + blurrer_tm1(x0_pred))
             if i in timesteps:
-                progress_images.append(z_t.clone())  # Clone to avoid in-place modifications
-            
-            alpha_t = self.alpha_t[i]
-            beta_t = self.beta_t[i]
+                print(i)
+                progress.append(z_t.clone())
 
-            z_t0 = z_t.clone()
-
-            # deblurring step
-            z_t -= (beta_t / torch.sqrt(1 - alpha_t)) * self.gt(z_t, (i/self.n_T) * _one)
-            z_t /= torch.sqrt(1 - beta_t)
-
-
-            if i > 1:
-                # correction step
-                correction_step = (torch.sqrt(beta_t) * torch.randn_like(z_t)) - (torch.sqrt(beta_t) * torch.randn_like(z_t0))
-                z_t += correction_step
-
-        return progress_images
-    
-    '''def max_blur(self, x: torch.Tensor) -> torch.Tensor:
-
-        # initialise blurrer
-        blurrer = v2.GaussianBlur(kernel_size=(5,9), sigma=(0.1, 2.))
-
-        # blur error term
-        blurred_z_t = blurrer(x)
-        blurred_eps = blurred_z_t - x
-
-        alpha_t = self.alpha_t[self.n_T, None, None, None]
-
-        z_T = torch.sqrt(alpha_t) * x + torch.sqrt(1 - alpha_t) * blurred_eps
-
-        return z_T'''
+        return z_t, progress
