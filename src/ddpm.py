@@ -64,7 +64,8 @@ class DDPM(nn.Module):
             z_t /= torch.sqrt(1 - beta_t)
 
             if i in timesteps:
-                progress.append(z_t.clone())
+                timestep = i.item() if isinstance(i, torch.Tensor) else i
+                progress.append((timestep, z_t.clone()))
 
             if i > 1:
                 # Last line of loop:

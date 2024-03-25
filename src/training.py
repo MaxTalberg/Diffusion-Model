@@ -4,7 +4,7 @@ from  tqdm import tqdm
 
 
 from utils import save_training_results, frechet_distance
-from plot_utils import save_and_plot_samples, plot_loss, plot_progress
+from plot_utils import save_and_plot_samples, plot_loss, plot_progress, plot_progress_like_second_function
 
 
 def train_epoch(model, dataloader, optimizer, cold_diff=False, single_batch=False):
@@ -96,11 +96,12 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_s
         with torch.no_grad():
             if cold_diff:
                 xh, progress = ddpm.sample_blur(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
-                plot_progress(progress, config["hyperparameters"]["timesteps"])
+                #plot_progress(progress, config["hyperparameters"]["timesteps"])
             else:
                 xh, progress = ddpm.sample(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
-                save_and_plot_samples(xh, progress, epoch, ddpm, config["hyperparameters"]["timesteps"])
             
+            plot_progress_like_second_function(progress, config["hyperparameters"]["timesteps"], epoch)
+
             if fid_score:
                 if epoch % config["hyperparameters"]["interval"] == 0:
                     fid_score = frechet_distance(real_images, xh)
