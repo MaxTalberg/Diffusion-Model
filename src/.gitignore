@@ -1,6 +1,8 @@
 # Ignore directories
 contents/
 metrics/
+data/
+model_data/
 
 # Ignore pth files
 *.pth
