@@ -12,4 +12,4 @@ if __name__ == "__main__":
     main(config_path="config.yaml",
          fid_score=True, 
          cold_diff=True,
-         quick_test=False)
+         quick_test=True)
