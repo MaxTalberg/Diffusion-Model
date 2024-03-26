@@ -8,34 +8,45 @@ import numpy as np
 
 from PIL import Image
 
-def plot_progress_like_second_function(progress, timesteps, save_path='./contents', epoch=0):
+def plot_progress(xh, progress,  epoch, timesteps, cold_diff = False, save_path='./contents'):
     os.makedirs(save_path, exist_ok=True)
+
+    # Save the generated sample grid
+    grid = make_grid(xh, nrow=4)
+    sample_filename = f"{save_path}/ddpm_sample_epoch_{epoch:04d}.png"
+    save_image(grid, sample_filename)
+
     
     # Sort the progress list based on timesteps
     sorted_progress = sorted(progress, key=lambda x: timesteps.index(x[0]))
     
     # Extract the first image from each mini-batch to represent each timestep
     images = [img_tensor[0] for _, img_tensor in sorted_progress]
-    
-    # Plot each image individually and save the plot
-    fig, axes = plt.subplots(1, len(images), figsize=(2 * len(images), 2))
-    for ax, img, timestep in zip(axes.flat, images, timesteps):
-        # Convert to numpy and squeeze if grayscale image
-        np_img = img.cpu().detach().numpy().squeeze()
-        ax.imshow(np_img, cmap='gray')
-        ax.set_title(f"t={timestep}", fontsize=10)
-        ax.axis('off')
-    
-    progress_filename = os.path.join(save_path, f"progress_epoch_{epoch:04d}.png")
-    plt.savefig(progress_filename, bbox_inches='tight')
-    plt.close(fig)
-    
-    # If you also want to save the grid image like the second function:
-    grid = make_grid(images, nrow=len(images))
-    grid_filename = os.path.join(save_path, f"grid_epoch_{epoch:04d}.png")
-    save_image(grid, grid_filename)
 
-def plot_progress(progress, timesteps):
+    if cold_diff:
+            # If you also want to save the grid image like the second function:
+        grid = make_grid(images, nrow=len(images))
+        grid_filename = os.path.join(save_path, f"progress_epoch{epoch:04d}.png")
+        save_image(grid, grid_filename)
+    
+    else:
+
+        fig, axes = plt.subplots(1, len(images), figsize=(2 * len(images), 2))
+        for ax, img, timestep in zip(axes, images, timesteps):
+            np_img = img.cpu().numpy().squeeze()
+            ax.imshow(np_img, cmap='gray')
+            adjusted_timestep = int(timestep) # Adjust timestep if necessary
+            ax.set_title(fr"$Z_{{{adjusted_timestep}}}$", fontsize=10)
+            ax.axis('off')
+
+        progress_filename = f"{save_path}/progress_epoch_{epoch:04d}.png"
+        plt.savefig(progress_filename, bbox_inches='tight')
+        plt.close(fig)
+
+    
+    
+
+'''def plot_progress(progress, timesteps):
     print("Progress content before sorting:")
     for idx, (t, img) in enumerate(progress):
         print(f"Index: {idx}, Timestep: {t}, Image tensor shape: {img.shape}")
@@ -110,7 +121,7 @@ def save_and_plot_samples(xh, progress, epoch, model, timesteps, save_path='./co
     progress_filename = f"{save_path}/progress_epoch_{epoch:04d}.png"
     plt.savefig(progress_filename, bbox_inches='tight')
     plt.close(fig)
-
+'''
 def plot_loss(avg_train_losses):
     """
     Plots the average training loss per epoch.
