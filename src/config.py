@@ -89,18 +89,18 @@ def setup_environment(config_path: str):
     optim = torch.optim.Adam(ddpm.parameters(), lr=float(config["optim"]["lr"]))
 
     # Load the dataset
-    train_dataloader, test_dataloader = get_dataloaders(
+    dataloader = get_dataloaders(
         config["hyperparameters"]["batch_size"],
         config["hyperparameters"]["num_workers"]
     )
 
     # Extract a batch of real images for FID
-    real_images, _ = next(iter(train_dataloader))
+    real_images, _ = next(iter(dataloader))
 
     # Prepare the device (GPU/CPU)
     accelerator = Accelerator()
-    ddpm, optim, train_dataloader, test_dataloader = accelerator.prepare(
-        ddpm, optim, train_dataloader, test_dataloader
+    ddpm, optim, dataloader = accelerator.prepare(
+        ddpm, optim, dataloader
     )
 
-    return config, ddpm, optim, train_dataloader, test_dataloader, accelerator, real_images
+    return config, ddpm, optim, dataloader, accelerator, real_images

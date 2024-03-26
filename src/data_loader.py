@@ -32,9 +32,9 @@ def get_dataloaders(batch_size, num_workers):
     ])
 
     # Initialize the MNIST training dataset with specified transformations
-    train_dataset = datasets.MNIST("./data", train=True, download=True, transform=transform)
+    dataset = datasets.MNIST("./data", train=True, download=True, transform=transform)
 
     # Create the DataLoader for the training dataset
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, drop_last=True)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, drop_last=True)
 
-    return train_dataloader
+    return dataloader

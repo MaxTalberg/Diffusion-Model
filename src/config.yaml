@@ -4,7 +4,7 @@ hyperparameters:
   num_workers: 8
   epochs: 10
   #   timesteps: [0, 1, 5, 10, 40, 140, 540, 1000, 1839, 1840] [
-  timesteps: [50, 49, 40, 30, 20, 10, 1]
+  timesteps: [1000, 999, 750, 500, 250, 200, 100, 50, 1]
   interval: 2
 
 CNN:
@@ -18,7 +18,7 @@ CNN:
 ddpm:
   beta1: 1e-5
   beta2: 0.01
-  n_T: 50
+  n_T: 500
 
 optim:
   lr: 2e-4

@@ -76,7 +76,7 @@ class DDPM(nn.Module):
 
     def blurrer(self, t, item = True):
         sigma_base = 0.02
-        sigma_scale = 0.05
+        sigma_scale = 0.01
         if item:
             sigma_value = sigma_base + (sigma_scale * t.item())
         else:
@@ -110,10 +110,10 @@ class DDPM(nn.Module):
 
         return blurrer(x)'''
 
-    def sample_blur(self, n_sample: int, size, device, timesteps=None) -> torch.Tensor:
+    def sample_blur(self, n_sample: int, device, timesteps=None) -> torch.Tensor:
 
         # max z_t
-        train_dataloader, _ = get_dataloaders(16, 8)
+        train_dataloader = get_dataloaders(16, 8)
         # get images
         x, _ = next(iter(train_dataloader))
 

@@ -55,7 +55,6 @@ def train_epoch(model, dataloader, optimizer, cold_diff=False, single_batch=Fals
     avg_train_loss = np.mean(train_losses)
     return avg_train_loss
 
-
 def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_score = False, cold_diff=False, quick_test=False):
     """
     Executes the training process.
@@ -84,7 +83,6 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_s
     periodically, and training metrics are plotted at the end of training.
     """
     metrics = []
-    avg_train_losses = []
     fids = []
 
     for epoch in range(config['hyperparameters']['epochs']):
@@ -95,8 +93,7 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_s
 
         with torch.no_grad():
             if cold_diff:
-                xh, progress = ddpm.sample_blur(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
-                #plot_progress(progress, config["hyperparameters"]["timesteps"])
+                xh, progress = ddpm.sample_blur(16, accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
             else:
                 xh, progress = ddpm.sample(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
             
