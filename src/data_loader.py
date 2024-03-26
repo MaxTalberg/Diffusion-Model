@@ -23,7 +23,6 @@ def get_dataloaders(batch_size, num_workers):
     tuple[DataLoader, DataLoader]
         A tuple containing the training and testing dataloaders for the MNIST dataset.
         - The first element is the DataLoader for the training set.
-        - The second element is the DataLoader for the testing set.
 
     """
     # Define the image transformations: Convert images to PyTorch tensors and normalize
@@ -34,12 +33,8 @@ def get_dataloaders(batch_size, num_workers):
 
     # Initialize the MNIST training dataset with specified transformations
     train_dataset = datasets.MNIST("./data", train=True, download=True, transform=transform)
-    # Initialize the MNIST testing dataset with specified transformations
-    test_dataset = datasets.MNIST("./data", train=False, download=True, transform=transform)
 
     # Create the DataLoader for the training dataset
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, drop_last=True)
-    # Create the DataLoader for the testing dataset
-    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers, drop_last=True)
 
-    return train_dataloader, test_dataloader
+    return train_dataloader

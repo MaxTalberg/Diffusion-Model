@@ -4,7 +4,7 @@ from  tqdm import tqdm
 
 
 from utils import save_training_results, frechet_distance
-from plot_utils import plot_loss, plot_progress
+from plot_utils import plot_progress, plot_metrics
 
 
 def train_epoch(model, dataloader, optimizer, cold_diff=False, single_batch=False):
@@ -112,8 +112,6 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_s
 
         metrics.append(epoch_metrics)
 
+    # Save training results and plot metrics
     save_training_results(config, metrics)
-    plot_metrics(config, metrics)
-    plot_loss(avg_train_losses)
-    #plot_fid(fids, config["hyperparameters"]["interval"], config['hyperparameters']['epochs'])
-
+    plot_metrics(metrics, config, fid_score)

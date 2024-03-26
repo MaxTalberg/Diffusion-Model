@@ -91,9 +91,7 @@ def plot_fid(fids, interval, epochs):
     plt.plot(epochs_plotted, fids, marker='o')
     plt.xlabel('Epoch')
     plt.ylabel('FID Score')
-    plt.title('FID Score over Epochs')
     plt.xticks(epochs_plotted)
-    plt.grid(True)
     plt.show()
 
 def plot_metrics(metrics, config, fid_score=False):
@@ -108,6 +106,7 @@ def plot_metrics(metrics, config, fid_score=False):
         The configuration dictionary containing training parameters and hyperparameters.
     """
     # Extracting training losses and FID scores
+    print(metrics)
     avg_train_losses = [m['train_loss'] for m in metrics]
     fids = [m['fid_score'] for m in metrics if 'fid_score' in m]
     epochs = config['hyperparameters']['epochs']
