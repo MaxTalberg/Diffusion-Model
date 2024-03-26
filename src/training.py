@@ -113,6 +113,7 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_s
         metrics.append(epoch_metrics)
 
     save_training_results(config, metrics)
+    plot_metrics(config, metrics)
     plot_loss(avg_train_losses)
     #plot_fid(fids, config["hyperparameters"]["interval"], config['hyperparameters']['epochs'])
 
