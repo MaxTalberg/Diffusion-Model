@@ -2,10 +2,10 @@ hyperparameters:
   seed: 12042000
   batch_size: 128
   num_workers: 8
-  epochs: 10
+  epochs: 100
   #   timesteps: [0, 1, 5, 10, 40, 140, 540, 1000, 1839, 1840] [
-  timesteps: [1000, 999, 750, 500, 250, 200, 100, 50, 1]
-  interval: 2
+  timesteps: [500, 400, 300, 250, 200, 100, 50, 25, 1]
+  interval: 7
 
 CNN:
   in_channels: 1  

@@ -100,15 +100,7 @@ class DDPM(nn.Module):
         blurred_z_t = torch.stack(blurred_images)
    
         return self.criterion(x, self.gt(blurred_z_t, t / self.n_T)), blurred_z_t
-    '''    
-    def max_blur(self, x: torch.Tensor) -> torch.Tensor:
 
-        sigma_base = 0.2
-        sigma_scale = 0.2
-        sigma_value = sigma_base + sigma_scale * math.log(self.n_T + 1)
-        blurrer = GaussianBlur(kernel_size=(5,9), sigma=(sigma_value))
-
-        return blurrer(x)'''
 
     def sample_blur(self, n_sample: int, device, timesteps=None) -> torch.Tensor:
 

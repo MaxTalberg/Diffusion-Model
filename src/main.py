@@ -10,6 +10,6 @@ def main(config_path: str, fid_score: bool = False, cold_diff: bool = False, qui
 
 if __name__ == "__main__":
     main(config_path="config.yaml",
-         fid_score=False, 
+         fid_score=True, 
          cold_diff=True,
          quick_test=False)
