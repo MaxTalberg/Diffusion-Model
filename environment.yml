@@ -1,0 +1,16 @@
+name: m2-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - accelerate=0.28.0
+  - matplotlib=3.8.0
+  - numpy=1.26.4
+  - python=3.11.8
+  - scipy=1.11.4
+  - yaml=0.2.5
+  - pip=23.3.1
+  - pip:
+      - torch==2.2.1
+      - torchvision==0.17.1
+      - tqdm==4.66.2

@@ -16,7 +16,7 @@ by **Max Talberg**
 1. **Clone the repository:**
    - Clone the repository from GitLab:
      ```bash
-     git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/A1_SKA_Assessment/mt942.git
+     git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/M2_Assessment/mt942.git
      ```
 
 2. **Build the Docker image:**
@@ -42,7 +42,7 @@ by **Max Talberg**
 1. **Clone the repository:**
    - Clone the repository from GitLab:
      ```bash
-     git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/A1_SKA_Assessment/mt942.git
+     git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/M2_Assessment/mt942.git
      ```
 
 2. **Set up the virtual environment:**

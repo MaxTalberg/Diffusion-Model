@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     main(
         config_path="config.yaml",
-        model_path=args.model,
+        model_path="default_model.yaml",
         fid_score=args.fid_score,
-        quick_test=args.quick_test,
+        quick_test=True,
     )
