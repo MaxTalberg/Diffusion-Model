@@ -71,8 +71,8 @@ def train(
     accelerator,
     real_images,
     fid_score=False,
-    cold_diff=False,
     quick_test=False,
+    cold_diff=False,
 ):
     """
     Executes the training process.
@@ -107,9 +107,9 @@ def train(
     samples and calculating the FID score. Progress images are saved periodically and
     training metrics are plotted at the end of training.
     """
-    if config_model['ddpm']['blur']:
+    if config_model["hyperparameters"]["type"] == "blur":
         cold_diff = True
-    
+
     metrics = []
     fids = []
 

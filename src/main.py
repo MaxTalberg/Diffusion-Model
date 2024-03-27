@@ -11,8 +11,7 @@ def main(
     config_path: str,
     model_path: str,
     fid_score: bool = False,
-    cold_diff: bool = False,
-    quick_test: bool = False,
+    quick_test: bool = False
 ):
     (
         config,
@@ -34,8 +33,7 @@ def main(
         accelerator,
         real_images,
         fid_score,
-        cold_diff,
-        quick_test,
+        quick_test
     )
 
 
@@ -54,6 +52,5 @@ if __name__ == "__main__":
         config_path="config.yaml",
         model_path=args.model,
         fid_score=args.fid_score,
-        cold_diff=args.cold_diff,
-        quick_test=args.quick_test,
+        quick_test=args.quick_test
     )

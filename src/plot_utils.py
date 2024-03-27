@@ -58,7 +58,7 @@ def plot_progress(
             ax.set_title(rf"$Z_{{{adjusted_timestep}}}$", fontsize=10)
             ax.axis("off")
 
-        progress_filename = f"{save_path}/progress_epoch_{epoch:04d}.png"
+        progress_filename = f"{save_path}/ddpm_progress_epoch_{epoch:04d}.png"
         plt.savefig(progress_filename, bbox_inches="tight")
         plt.close(fig)
 

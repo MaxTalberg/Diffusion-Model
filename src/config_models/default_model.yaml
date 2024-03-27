@@ -2,9 +2,10 @@ hyperparameters:
   epochs: 2
   timesteps: [1000, 750, 500, 250, 100, 50, 10, 5, 1]
   interval: 9
+  type: noise
 
 ddpm:
   beta1: 1e-4
   beta2: 0.02
   n_T: 1000
-  type: noise
+
