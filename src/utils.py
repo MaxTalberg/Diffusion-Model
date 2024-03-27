@@ -9,7 +9,7 @@ from torchvision.transforms import Lambda
 from torchvision.models import inception_v3, Inception_V3_Weights
 
 
-def save_training_results(config, metrics):
+def save_training_results(config, config_model, metrics):
     """
     Save training results including configuration and metrics to a JSON file.
 
@@ -26,6 +26,7 @@ def save_training_results(config, metrics):
     """
     results = {
         "config": config,
+        "model": config_model,
         "metrics": metrics
     }
 

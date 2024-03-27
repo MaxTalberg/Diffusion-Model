@@ -55,7 +55,7 @@ def train_epoch(model, dataloader, optimizer, cold_diff=False, single_batch=Fals
     avg_train_loss = np.mean(train_losses)
     return avg_train_loss
 
-def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_score = False, cold_diff=False, quick_test=False):
+def train(config, config_model, ddpm, optim, train_dataloader, accelerator, real_images, fid_score = False, cold_diff=False, quick_test=False):
     """
     Executes the training process.
 
@@ -63,6 +63,8 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_s
     ----------
     config : dict
         The configuration dictionary containing training parameters and hyperparameters.
+    config_model : dict
+        The model configuration dictionary containing the model architecture and hyperparameters.
     ddpm : DDPM
         The initialized DDPM (Denoising Diffusion Probabilistic Models) model to be trained.
     optim : torch.optim.Optimizer
@@ -85,7 +87,7 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_s
     metrics = []
     fids = []
 
-    for epoch in range(config['hyperparameters']['epochs']):
+    for epoch in range(config_model['hyperparameters']['epochs']):
         avg_train_loss = train_epoch(ddpm, train_dataloader, optim, cold_diff, single_batch=quick_test)
         print(f"Epoch {epoch} - Train Loss: {avg_train_loss:.3g}")
 
@@ -93,14 +95,14 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_s
 
         with torch.no_grad():
             if cold_diff:
-                xh, progress = ddpm.sample_blur(16, accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
+                xh, progress = ddpm.sample_blur(16, accelerator.device, timesteps=config_model["hyperparameters"]["timesteps"])
             else:
-                xh, progress = ddpm.sample(16, (1, 28, 28), accelerator.device, timesteps=config["hyperparameters"]["timesteps"])
+                xh, progress = ddpm.sample(16, (1, 28, 28), accelerator.device, timesteps=config_model["hyperparameters"]["timesteps"])
             
-            plot_progress(xh, progress, epoch, config["hyperparameters"]["timesteps"], cold_diff)
+            plot_progress(xh, progress, epoch, config_model["hyperparameters"]["timesteps"], cold_diff)
 
             if fid_score:
-                if epoch % config["hyperparameters"]["interval"] == 0:
+                if epoch % config_model["hyperparameters"]["interval"] == 0:
                     fid_score = frechet_distance(real_images, xh)
                     fid_score = float(fid_score)
                     fids.append(fid_score)
@@ -110,5 +112,6 @@ def train(config, ddpm, optim, train_dataloader, accelerator, real_images, fid_s
         metrics.append(epoch_metrics)
 
     # Save training results and plot metrics
-    save_training_results(config, metrics)
-    plot_metrics(metrics, config, fid_score)
+    save_training_results(config, config_model, metrics)
+    plot_metrics(metrics, config_model, fid_score)
+    

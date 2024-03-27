@@ -53,39 +53,42 @@ def load_config(config_path):
         config = yaml.safe_load(file)
     return config
 
-def setup_environment(config_path: str):
+def setup_environment(config_path: str, model_path: str):
     """
-    Sets up the training environment by loading the configuration, initializing the model and
-    optimizer, loading the dataset, and preparing the device.
+    Sets up the training environment by loading the configuration, initialising the model and
+    optimiser, loading the dataset, and preparing the device.
 
     Parameters
     ----------
     config_path : str
         The file path to the configuration file.
+    model_path : str
+        The file path to the model configuration file.
 
     Returns
     -------
     tuple
-        A tuple containing the loaded configuration, initialized model, optimizer, training and
+        A tuple containing the loaded configuration, initialised model, optimiser, training and
         testing dataloaders, accelerator object, and a batch of real images for FID calculation.
 
     Notes
     -----
     This function is a high-level setup function that prepares everything needed to start training.
-    It initializes the CNN and DDPM models based on the provided configuration, sets up the dataloaders,
+    It initialises the CNN and DDPM models based on the provided configuration, sets up the dataloaders,
     and prepares the device for training using the Hugging Face Accelerator for mixed precision and
     distributed training. It also extracts a batch of real images from the training dataloader for
     later use in FID score calculation.
     """
     # Load configuration
     config = load_config(config_path)
+    config_model = load_config(model_path)
 
     # Set seed for reproducibility
     set_seed(config['hyperparameters']['seed'])
 
-    # Initialize the model and optimizer
+    # Initialise the model and optimiser
     gt = CNN(**config['CNN'])
-    ddpm = DDPM(gt=gt, **config["ddpm"])
+    ddpm = DDPM(gt=gt, **config_model["ddpm"])
     optim = torch.optim.Adam(ddpm.parameters(), lr=float(config["optim"]["lr"]))
 
     # Load the dataset
@@ -103,4 +106,4 @@ def setup_environment(config_path: str):
         ddpm, optim, dataloader
     )
 
-    return config, ddpm, optim, dataloader, accelerator, real_images
+    return config, config_model, ddpm, optim, dataloader, accelerator, real_images
