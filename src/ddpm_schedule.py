@@ -3,7 +3,8 @@ from typing import Dict
 
 def ddpm_schedules(beta1: float, beta2: float, T: int) -> Dict[str, torch.Tensor]:
     """
-    Computes the noise schedules for Denoising Diffusion Probabilistic Models (DDPM) based on a linear progression of noise levels defined by `beta1` and `beta2` over `T` timesteps. This function returns a dictionary containing the tensors `beta_t` and `alpha_t`, which represent the noise schedule and the corresponding cumulative product of (1 - beta), respectively.
+    Computes the noise schedules for Denoising Diffusion Probabilistic Models (DDPM) based on a linear progression of noise levels defined by `beta1` and `beta2` over `T` timesteps. 
+    This function returns a dictionary containing the tensors `beta_t` and `alpha_t`, which represent the noise schedule and the corresponding cumulative product of (1 - beta), respectively.
 
     Parameters
     ----------

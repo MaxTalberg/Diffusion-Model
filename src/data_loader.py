@@ -5,8 +5,8 @@ def get_dataloaders(batch_size, num_workers):
     """
     Prepare dataloaders for the MNIST dataset for both training and testing.
 
-    This function initializes the MNIST dataset with a standard preprocessing pipeline,
-    which includes converting images to tensors and normalizing them. It then creates
+    This function initialises the MNIST dataset with a standard preprocessing pipeline,
+    which includes converting images to tensors and normalising them. It then creates
     dataloaders for both the training and testing sets of the MNIST dataset, which are
     used to iterate over the dataset in batches during model training and evaluation.
 
@@ -28,10 +28,10 @@ def get_dataloaders(batch_size, num_workers):
     # Define the image transformations: Convert images to PyTorch tensors and normalize
     transform = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize((0.5,), (1.0))  # Normalize images with mean=0.5, std=1.0
+        transforms.Normalize((0.5,), (1.0))  # Normalise images with mean=0.5, std=1.0
     ])
 
-    # Initialize the MNIST training dataset with specified transformations
+    # Initialise the MNIST training dataset with specified transformations
     dataset = datasets.MNIST("./data", train=True, download=True, transform=transform)
 
     # Create the DataLoader for the training dataset

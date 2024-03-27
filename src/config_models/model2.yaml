@@ -1,5 +1,5 @@
 hyperparameters:
-  epochs: 10
+  epochs: 100
   timesteps: [18300, 10000, 5000, 1000, 500, 100, 50, 10, 1]
   interval: 9
 

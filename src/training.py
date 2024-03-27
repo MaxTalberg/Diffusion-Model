@@ -18,7 +18,7 @@ def train_epoch(model, dataloader, optimizer, cold_diff=False, single_batch=Fals
     dataloader : torch.utils.data.DataLoader
         The DataLoader providing the training data.
     optimizer : torch.optim.Optimizer
-        The optimizer used for updating model parameters based on gradients.
+        The optimiser used for updating model parameters based on gradients.
     single_batch : bool, optional
         If True, the training will be performed on a single batch only. This is useful for quick testing. Default is False.
 
@@ -66,7 +66,7 @@ def train(config, config_model, ddpm, optim, train_dataloader, accelerator, real
     config_model : dict
         The model configuration dictionary containing the model architecture and hyperparameters.
     ddpm : DDPM
-        The initialized DDPM (Denoising Diffusion Probabilistic Models) model to be trained.
+        The initialised DDPM (Denoising Diffusion Probabilistic Models) model to be trained.
     optim : torch.optim.Optimizer
         The optimizer used for updating model parameters.
     train_dataloader : torch.utils.data.DataLoader

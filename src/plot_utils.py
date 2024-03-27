@@ -22,10 +22,7 @@ def plot_progress(xh, progress, epoch, timesteps, cold_diff=False, save_path='./
         If True, saves a grid image of the first image from each batch in `progress` instead of individual images. Defaults to False.
     save_path : str, optional
         The directory path where the progress images are to be saved. Defaults to './contents'.
-
-    Notes
-    -----
-    This function creates a grid of the last batch of generated images and saves it. If `cold_diff` is True, it also saves a grid image showing the progress across different timesteps. Otherwise, it generates a plot of individual progress images across timesteps and saves that.
+        
     """
     os.makedirs(save_path, exist_ok=True)
 
@@ -74,7 +71,7 @@ def plot_loss(avg_train_losses):
     Notes
     -----
     This function plots the average training loss over epochs, providing insight into how the model's
-    training is progressing in terms of minimizing the loss over time.
+    training is progressing in terms of minimising the loss over time.
     """
     
     plt.figure(figsize=(10, 6))
@@ -101,7 +98,7 @@ def plot_fid(fids, interval, epochs):
     -----
     This function plots the FID scores, which are calculated at specified intervals over the total number of epochs. 
     The FID score is a measure of similarity between two sets of images, and in this context, it usually measures how 
-    similar generated images are to real images. Lower FID scores indicate better image quality and feature similarity.
+    similar generated images are to real images.
     """
     
     plt.figure(figsize=(10, 5))
@@ -134,7 +131,3 @@ def plot_metrics(metrics, config_model, fid_score=False):
     if fid_score:
         plot_fid(fids, interval, epochs)
     
-
-
-
-

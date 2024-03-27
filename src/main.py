@@ -11,6 +11,6 @@ def main(config_path: str, model_path: str, fid_score: bool = False, cold_diff: 
 if __name__ == "__main__":
     main(config_path="config.yaml",
          model_path="default_model.yaml",
-         fid_score=False, 
+         fid_score=True, 
          cold_diff=False,
-         quick_test=True)
+         quick_test=False)

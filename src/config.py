@@ -81,7 +81,7 @@ def setup_environment(config_path: str, model_path: str):
     """
     # Load configuration
     config = load_config(config_path)
-    config_model = load_config(model_path)
+    config_model = load_config(f'./config_models/{model_path}')
 
     # Set seed for reproducibility
     set_seed(config['hyperparameters']['seed'])

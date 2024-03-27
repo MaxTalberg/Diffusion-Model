@@ -59,7 +59,8 @@ class CNNBlock(nn.Module):
     
 class CNN(nn.Module):
     """
-    A convolutional neural network model that incorporates a series of `CNNBlock` layers, followed by a final convolutional layer. The model also includes a mechanism to embed temporal information into the input tensor, which is useful for tasks involving time-dependent data.
+    A convolutional neural network model that incorporates a series of `CNNBlock` layers, followed by a final convolutional layer. 
+    The model also includes a mechanism to embed temporal information into the input tensor, which is useful for tasks involving time-dependent data.
 
     Parameters
     ----------

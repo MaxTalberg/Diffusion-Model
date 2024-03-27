@@ -73,7 +73,7 @@ def preprocess_images_for_inception(images):
     """
     images_cpu = images.to('cpu')
 
-    # Define the transformation steps: resizing, expanding gray to RGB, and normalization
+    # Define the transformation steps: resizing, expanding gray to RGB, and normalisation
     transform = transforms.Compose([
         transforms.Resize((299, 299)),
         Lambda(expand_gray_to_rgb),  
@@ -85,7 +85,7 @@ def preprocess_images_for_inception(images):
 
     return image_processed
 
-def get_features(images, model=inception_model, batch_size=32):
+def get_features(images, model=inception_model, batch_size=16):
     """
     Extract features from images using a pretrained model, batch by batch.
 
@@ -96,7 +96,7 @@ def get_features(images, model=inception_model, batch_size=32):
     model : torch.nn.Module, optional
         The model to use for feature extraction, default is the global `inception_model`.
     batch_size : int, optional
-        The size of each batch to process at a time, default is 32.
+        The size of each batch to process at a time
 
     Returns
     -------
