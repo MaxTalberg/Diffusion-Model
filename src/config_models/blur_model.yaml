@@ -1,5 +1,5 @@
 hyperparameters:
-  epochs: 100
+  epochs: 2
   timesteps: [500, 400, 300, 250, 200, 100, 50, 25, 1]
   interval: 9
 
@@ -7,4 +7,5 @@ ddpm:
   beta1: 1e-5
   beta2: 0.01
   n_T: 1840
+  type: blur
 

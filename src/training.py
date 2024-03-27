@@ -107,6 +107,9 @@ def train(
     samples and calculating the FID score. Progress images are saved periodically and
     training metrics are plotted at the end of training.
     """
+    if config_model['ddpm']['blur']:
+        cold_diff = True
+    
     metrics = []
     fids = []
 

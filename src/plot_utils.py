@@ -131,7 +131,6 @@ def plot_metrics(metrics, config_model, fid_score=False):
         hyperparameters.
     """
     # Extracting training losses and FID scores
-    print(metrics)
     avg_train_losses = [m["train_loss"] for m in metrics]
     fids = [m["fid_score"] for m in metrics if "fid_score" in m]
     epochs = config_model["hyperparameters"]["epochs"]
