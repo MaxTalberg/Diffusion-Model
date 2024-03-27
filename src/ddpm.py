@@ -10,6 +10,35 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class DDPM(nn.Module):
+    """
+    Implements a Denoising Diffusion Probabilistic Model (DDPM) for generating or denoising images. The model uses a pre-defined noise schedule to gradually add or remove noise from images through a series of forward and reverse steps.
+
+    Parameters
+    ----------
+    gt : callable
+        A function or callable object that takes noisy images and their respective timesteps as input and predicts the original (noise-free) image.
+    beta1 : float
+        The starting value of the noise schedule (beta).
+    beta2 : float
+        The ending value of the noise schedule (beta).
+    n_T : int
+        The number of timesteps to be used in the diffusion process.
+    criterion : nn.Module, optional
+        The loss function used to compare the predicted noise-free images against the true images. Defaults to Mean Squared Error (MSE) loss.
+
+    Attributes
+    ----------
+    gt : callable
+        The ground truth prediction function for the model.
+    beta_t : torch.Tensor
+        The noise schedule (beta) values for each timestep, stored as a PyTorch buffer.
+    alpha_t : torch.Tensor
+        The cumulative product of (1 - beta_t) values, representing the noise levels at each timestep, stored as a PyTorch buffer.
+    n_T : int
+        The total number of timesteps in the diffusion process.
+    criterion : nn.Module
+        The loss function used for training the model.
+    """
     def __init__(
         self,
         gt,
@@ -189,10 +218,10 @@ class DDPM(nn.Module):
         """
 
         # max z_t
-        train_dataloader = get_dataloaders(16, 8)
+        blur_dataloader = get_dataloaders(16, 8)
 
         # get images
-        x, _ = next(iter(train_dataloader))
+        x, _ = next(iter(blur_dataloader))
 
         # blur images
         blurrer = self.blurrer(self.n_T, item=False)

@@ -3,12 +3,30 @@ import torch
 import matplotlib.pyplot as plt
 from torchvision.utils import make_grid, save_image
 
-import torchvision
-import numpy as np
 
-from PIL import Image
+def plot_progress(xh, progress, epoch, timesteps, cold_diff=False, save_path='./contents'):
+    """
+    Saves and optionally plots the progress of generated samples over different timesteps during training.
 
-def plot_progress(xh, progress,  epoch, timesteps, cold_diff = False, save_path='./contents'):
+    Parameters
+    ----------
+    xh : torch.Tensor
+        The last batch of generated images from the current epoch.
+    progress : list of tuples
+        Each tuple contains a timestep and its corresponding batch of generated images. The first image of each batch represents the progress at that timestep.
+    epoch : int
+        The current training epoch.
+    timesteps : list of int
+        The list of timesteps at which progress images were captured.
+    cold_diff : bool, optional
+        If True, saves a grid image of the first image from each batch in `progress` instead of individual images. Defaults to False.
+    save_path : str, optional
+        The directory path where the progress images are to be saved. Defaults to './contents'.
+
+    Notes
+    -----
+    This function creates a grid of the last batch of generated images and saves it. If `cold_diff` is True, it also saves a grid image showing the progress across different timesteps. Otherwise, it generates a plot of individual progress images across timesteps and saves that.
+    """
     os.makedirs(save_path, exist_ok=True)
 
     # Save the generated sample grid
