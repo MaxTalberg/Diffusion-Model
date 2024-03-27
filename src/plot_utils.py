@@ -84,7 +84,7 @@ def plot_loss(avg_train_losses):
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.legend()
-    plt.savefig('./contents/training_loss.png')
+    plt.savefig("./contents/training_loss.png")
     plt.show()
 
 
@@ -115,8 +115,9 @@ def plot_fid(fids, interval, epochs):
     plt.xlabel("Epoch")
     plt.ylabel("FID Score")
     plt.xticks(epochs_plotted)
-    plt.savefig('./contents/fid_score.png')
+    plt.savefig("./contents/fid_score.png")
     plt.show()
+
 
 def plot_metrics(metrics, config_model, fid_score=False):
     """
