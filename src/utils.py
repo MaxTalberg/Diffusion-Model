@@ -16,7 +16,8 @@ def save_training_results(config, config_model, metrics):
     Parameters
     ----------
     config : dict
-        Configuration parameters used for training, such as learning rate, batch size, etc.
+        Configuration parameters used for training, such as learning rate,
+        batch size, etc.
     metrics : dict
         Training metrics such as loss and accuracy collected during training.
 
@@ -24,25 +25,24 @@ def save_training_results(config, config_model, metrics):
     -------
     None
     """
-    results = {
-        "config": config,
-        "model": config_model,
-        "metrics": metrics
-    }
+    results = {"config": config, "model": config_model, "metrics": metrics}
 
-    path = 'metrics/'
+    path = "metrics/"
     filename = f"results_{int(time.time())}.json"
 
     with open(os.path.join(path, filename), "w") as outfile:
         json.dump(results, outfile, indent=4)
 
+
 inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
 inception_model.eval()  # Set the Inception model to evaluation mode.
 torch.set_num_threads(1)  # Limit torch to use only one thread for its operations.
 
+
 def expand_gray_to_rgb(x):
     """
-    Expand a grayscale image to have 3 channels by repeating it across the channel dimension.
+    Expand a grayscale image to have 3 channels by repeating it across the
+    channel dimension.
 
     Parameters
     ----------
@@ -54,8 +54,9 @@ def expand_gray_to_rgb(x):
     torch.Tensor
         The expanded tensor with 3 channels for each image.
     """
-    # Expands the second dimension (channels) to 3 by repeating the grayscale channel
+    # Expands the to 3 channels by repeating the grayscale channel
     return x.expand(-1, 3, -1, -1)
+
 
 def preprocess_images_for_inception(images):
     """
@@ -71,19 +72,22 @@ def preprocess_images_for_inception(images):
     torch.Tensor
         The processed image tensor ready for input to the Inception model.
     """
-    images_cpu = images.to('cpu')
+    images_cpu = images.to("cpu")
 
-    # Define the transformation steps: resizing, expanding gray to RGB, and normalisation
-    transform = transforms.Compose([
-        transforms.Resize((299, 299)),
-        Lambda(expand_gray_to_rgb),  
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+    # Resizing, expanding gray to RGB, and normalisation
+    transform = transforms.Compose(
+        [
+            transforms.Resize((299, 299)),
+            Lambda(expand_gray_to_rgb),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
 
     # Apply transformations to the images
     image_processed = transform(images_cpu)
 
     return image_processed
+
 
 def get_features(images, model=inception_model, batch_size=16):
     """
@@ -94,7 +98,8 @@ def get_features(images, model=inception_model, batch_size=16):
     images : torch.Tensor
         A tensor representing a batch of images to process.
     model : torch.nn.Module, optional
-        The model to use for feature extraction, default is the global `inception_model`.
+        The model to use for feature extraction, default is the global
+        `inception_model`.
     batch_size : int, optional
         The size of each batch to process at a time
 
@@ -109,15 +114,17 @@ def get_features(images, model=inception_model, batch_size=16):
     features = []
     with torch.no_grad():
         for i in range(0, len(images), batch_size):
-            batch = images[i:i+batch_size]
+            batch = images[i : i + batch_size]
             batch_features = model(batch)
             features.append(batch_features.cpu())
         features = torch.cat(features, 0)
     return features
 
+
 def frechet_distance(real_images, generated_images, inception_model=inception_model):
     """
-    Calculate the Frechet Inception Distance (FID) between real and generated images.
+    Calculate the Frechet Inception Distance (FID) between real and
+    generated images.
 
     Parameters
     ----------
@@ -126,7 +133,8 @@ def frechet_distance(real_images, generated_images, inception_model=inception_mo
     generated_images : torch.Tensor
         A tensor of generated images to compare against the real images.
     inception_model : torch.nn.Module, optional
-        The Inception model to use for feature extraction, default is the global `inception_model`.
+        The Inception model to use for feature extraction,
+        default is the global `inception_model`.
 
     Returns
     -------
@@ -160,6 +168,8 @@ def frechet_distance(real_images, generated_images, inception_model=inception_mo
     sqrt_cov_gen = torch.from_numpy(np.real(sqrt_cov_gen)).to(gen_features.device)
 
     # Final FID score computation
-    fid = torch.norm(m_real - m_gen)**2 + torch.trace(cov_real + cov_gen - 2 * (sqrt_cov_real @ sqrt_cov_gen))
+    fid = torch.norm(m_real - m_gen) ** 2 + torch.trace(
+        cov_real + cov_gen - 2 * (sqrt_cov_real @ sqrt_cov_gen)
+    )
 
     return fid
