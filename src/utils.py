@@ -1,8 +1,8 @@
-import torch
-import numpy as np
+import os
 import json
 import time
-import os
+import torch
+import numpy as np
 import scipy.linalg
 from torchvision import transforms
 from torchvision.transforms import Lambda
@@ -105,7 +105,7 @@ def get_features(images, model=inception_model, batch_size=16):
     """
     images = preprocess_images_for_inception(images)
 
-    model.eval()  # Ensure the model is in evaluation mode
+    model.eval()
     features = []
     with torch.no_grad():
         for i in range(0, len(images), batch_size):
@@ -136,25 +136,30 @@ def frechet_distance(real_images, generated_images, inception_model=inception_mo
     real_features = get_features(real_images, inception_model)
     gen_features = get_features(generated_images, inception_model)
 
+    # Compute mean feature vectors
     m_real = real_features.mean(0)
     m_gen = gen_features.mean(0)
 
+    # Center the feature vectors
     real_features -= m_real
     gen_features -= m_gen
 
+    # Compute the covariance matrices
     cov_real = real_features.T @ real_features / (real_features.size(0) - 1)
     cov_gen = gen_features.T @ gen_features / (gen_features.size(0) - 1)
 
     cov_real_np = cov_real.cpu().detach().numpy()
     cov_gen_np = cov_gen.cpu().detach().numpy()
 
+    # Compute the square root of the covariance matrices
     sqrt_cov_real = scipy.linalg.sqrtm(cov_real_np)
     sqrt_cov_gen = scipy.linalg.sqrtm(cov_gen_np)
 
+    # Convert back to tensors
     sqrt_cov_real = torch.from_numpy(np.real(sqrt_cov_real)).to(real_features.device)
     sqrt_cov_gen = torch.from_numpy(np.real(sqrt_cov_gen)).to(gen_features.device)
 
-    # Compute FID score
+    # Final FID score computation
     fid = torch.norm(m_real - m_gen)**2 + torch.trace(cov_real + cov_gen - 2 * (sqrt_cov_real @ sqrt_cov_gen))
 
     return fid
