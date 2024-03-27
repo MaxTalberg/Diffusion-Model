@@ -8,10 +8,7 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 def main(
-    config_path: str,
-    model_path: str,
-    fid_score: bool = False,
-    quick_test: bool = False
+    config_path: str, model_path: str, fid_score: bool = False, quick_test: bool = False
 ):
     (
         config,
@@ -33,7 +30,7 @@ def main(
         accelerator,
         real_images,
         fid_score,
-        quick_test
+        quick_test,
     )
 
 
@@ -52,5 +49,5 @@ if __name__ == "__main__":
         config_path="config.yaml",
         model_path=args.model,
         fid_score=args.fid_score,
-        quick_test=args.quick_test
+        quick_test=args.quick_test,
     )
