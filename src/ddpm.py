@@ -35,8 +35,23 @@ class DDPM(nn.Module):
         self.criterion = criterion
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Algorithm 18.1 in Prince"""
+        """
+        Performs a forward pass of the model, simulating one step of the diffusion process as described in Algorithm 18.1 from Prince. It applies a transformation to the input tensor `x` to produce a noised version `z_t` and computes a loss based on the predicted noise.
 
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor for the diffusion step, typically representing an image or batch of images.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the computed loss and the noised version of the input tensor `z_t`.
+        
+        Notes
+        -----
+        Algorithm 18.1 in Prince
+        """
         t = torch.randint(1, self.n_T, (x.shape[0],), device=x.device)
         eps = torch.randn_like(x)  # eps ~ N(0, 1)
         alpha_t = self.alpha_t[t, None, None, None]  # Get right shape for broadcasting
@@ -48,8 +63,29 @@ class DDPM(nn.Module):
         return self.criterion(eps, self.gt(z_t, t / self.n_T)), z_t
 
     def sample(self, n_sample: int, size, device, timesteps=None) -> torch.Tensor:
-        """Algorithm 18.2 in Prince"""
+        """
+        Generates samples by reversing the diffusion process as described in Algorithm 18.2 from Prince. This method iteratively refines noise to generate samples, optionally recording the intermediate states at specified timesteps.
 
+        Parameters
+        ----------
+        n_sample : int
+            The number of samples to generate.
+        size : tuple
+            The size of each sample to generate.
+        device : torch.device
+            The device on which to perform the computation.
+        timesteps : list, optional
+            Specific timesteps at which to record the intermediate states of the generated samples.
+
+        Returns
+        -------
+        torch.Tensor, list
+            The final generated samples and a list of tuples containing the timestep and the sample at that timestep, if `timesteps` is provided.
+
+        Notes
+        -----
+        Algorithm 18.2 in Prince
+        """
         _one = torch.ones(n_sample, device=device)
         z_t = torch.randn(n_sample, *size, device=device)
         progress = []
@@ -75,6 +111,21 @@ class DDPM(nn.Module):
         return z_t, progress
 
     def blurrer(self, t, item = True):
+        """
+        Creates a Gaussian blurring operation based on the specified timestep `t`. The blur intensity is determined by the timestep, with higher timesteps resulting in more blur.
+
+        Parameters
+        ----------
+        t : torch.Tensor or int
+            The timestep based on which the blur intensity is calculated. If `t` is a tensor, its item will be used if `item` is True.
+        item : bool, default True
+            Specifies whether to call the `.item()` method on `t` if it's a tensor to get a Python number.
+
+        Returns
+        -------
+        torchvision.transforms.GaussianBlur
+            A Gaussian blur transform configured with the calculated sigma value based on the timestep.
+        """
         sigma_base = 0.02
         sigma_scale = 0.01
         if item:
@@ -84,7 +135,19 @@ class DDPM(nn.Module):
         return GaussianBlur(kernel_size=(29,29), sigma=(sigma_value))
     
     def forward_blur(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Applies a forward pass with blurring to the input tensor `x`. This method simulates a blurring process on the input images and computes a loss based on the predicted original images from the blurred images.
 
+        Parameters
+        ----------
+        x : torch.Tensor
+            The input tensor representing a batch of images to be blurred and processed.
+
+        Returns
+        -------
+        tuple
+            A tuple containing the computed loss and the blurred version of the input tensor.
+        """
         # random timestep
         t = torch.randint(1, self.n_T, (x.shape[0],), device=x.device)
         
@@ -103,6 +166,27 @@ class DDPM(nn.Module):
 
 
     def sample_blur(self, n_sample: int, device, timesteps=None) -> torch.Tensor:
+        """
+        Generates blurred samples by applying a specific blurring process described in Algorithm 2 from Bansal et al. (2020). This method simulates the process of unblurring the images step by step, optionally recording the intermediate states at specified timesteps.
+
+        Parameters
+        ----------
+        n_sample : int
+            The number of samples to generate.
+        device : torch.device
+            The device on which to perform the computation.
+        timesteps : list, optional
+            Specific timesteps at which to record the intermediate states of the generated samples.
+
+        Returns
+        -------
+        torch.Tensor, list
+            The final generated (unblurred) samples and a list of tuples containing the timestep and the sample at that timestep, if `timesteps` is provided.
+        
+        Notes
+        -----
+        Algorithm 2 in Bansal et al. (2020)
+        """
 
         # max z_t
         train_dataloader = get_dataloaders(16, 8)
@@ -133,5 +217,4 @@ class DDPM(nn.Module):
                    - blurrer_t(x0_pred) 
                    + blurrer_tm1(x0_pred))
             
-    
         return z_t, progress
