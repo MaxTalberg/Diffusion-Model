@@ -106,13 +106,13 @@ class DDPM(nn.Module):
 
         # max z_t
         train_dataloader = get_dataloaders(16, 8)
+
         # get images
         x, _ = next(iter(train_dataloader))
 
         # blur images
         blurrer = self.blurrer(self.n_T, item=False)
         z_t = blurrer(x).float().to(device)
-    
         
         # initialise Z_T
         _one = torch.ones(n_sample, device=device)
@@ -133,6 +133,5 @@ class DDPM(nn.Module):
                    - blurrer_t(x0_pred) 
                    + blurrer_tm1(x0_pred))
             
-        
-
+    
         return z_t, progress

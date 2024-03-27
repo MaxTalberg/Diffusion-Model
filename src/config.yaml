@@ -3,8 +3,7 @@ hyperparameters:
   batch_size: 128
   num_workers: 8
   epochs: 100
-  #   timesteps: [0, 1, 5, 10, 40, 140, 540, 1000, 1839, 1840] [
-  timesteps: [500, 400, 300, 250, 200, 100, 50, 25, 1]
+  timesteps: [1000, 750, 500, 250, 100, 50, 10, 5, 1]
   interval: 7
 
 CNN:
@@ -18,7 +17,7 @@ CNN:
 ddpm:
   beta1: 1e-5
   beta2: 0.01
-  n_T: 500
+  n_T: 1000
 
 optim:
   lr: 2e-4

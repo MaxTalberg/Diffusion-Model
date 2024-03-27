@@ -26,7 +26,7 @@ def plot_progress(xh, progress,  epoch, timesteps, cold_diff = False, save_path=
     if cold_diff:
             # If you also want to save the grid image like the second function:
         grid = make_grid(images, nrow=len(images))
-        grid_filename = os.path.join(save_path, f"progress_epoch_{epoch:04d}.png")
+        grid_filename = f"{save_path}/ddpm_progress_epoch_{epoch:04d}.png"
         save_image(grid, grid_filename)
     
     else:
