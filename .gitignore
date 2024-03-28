@@ -6,3 +6,6 @@ model_data/
 
 # Ignore pth files
 *.pth
+
+# Ignore flake8
+.flake8
