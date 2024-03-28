@@ -20,7 +20,10 @@ by **Max Talberg**
      ```
 
 2. **Set up the virtual environment:**
-
+   - Navigate to the project directory:
+     ```bash
+       cd mt942
+       ```
    - Create virtual environment:
      ```bash
      conda env create -f environment.yml
@@ -30,7 +33,6 @@ by **Max Talberg**
       conda activate m2-env
       ```
 3. **Running the script:**
-
    - Run the main script:
      ```bash
      python src/main.py --model <model_config> <options>
@@ -66,7 +68,10 @@ by **Max Talberg**
      ```
 
 2. **Build the Docker image:**
-
+   - Navigate to the project directory:
+     ```bash
+       cd mt942
+       ```
    - Build image:
      ```bash
      docker build -t diffusion-model .
@@ -97,4 +102,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Use of generative tools
 
-This project has utilised auto-generative tools in the development of documentation that is compatible with auto-documentation tools and the development of plotting functions.
+This project has utilised auto-generative tools in the development of documentation that is compatible with auto-documentation tools, latex formatting and the development of plotting functions. 
+
+Example prompts used for this project:
+- Generate doc-strings in NumPy format for this function.
+- Generate Latex code for an algorithm.
+- Generate Latex code for an equation.
+- Generate Python code for a 9 by 1 subplot.
