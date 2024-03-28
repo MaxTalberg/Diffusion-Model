@@ -1,7 +1,7 @@
 hyperparameters:
-  epochs: 2
+  epochs: 100
   timesteps: [500, 400, 300, 250, 200, 100, 50, 25, 1]
-  interval: 9
+  interval: 7
   type: blur
 
 ddpm:

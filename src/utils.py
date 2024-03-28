@@ -8,6 +8,10 @@ from torchvision import transforms
 from torchvision.transforms import Lambda
 from torchvision.models import inception_v3, Inception_V3_Weights
 
+# Initialise inception model and set to evaluation mode for FID calculation
+inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
+inception_model.eval()
+
 
 def save_training_results(config, config_model, metrics):
     """
@@ -32,11 +36,6 @@ def save_training_results(config, config_model, metrics):
 
     with open(os.path.join(path, filename), "w") as outfile:
         json.dump(results, outfile, indent=4)
-
-
-inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-inception_model.eval()  # Set the Inception model to evaluation mode.
-torch.set_num_threads(1)  # Limit torch to use only one thread for its operations.
 
 
 def expand_gray_to_rgb(x):

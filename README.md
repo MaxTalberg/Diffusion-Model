@@ -53,26 +53,32 @@ by **Max Talberg**
      ```
     - Activate virtual environment:
       ```bash
-      conda activate ska-env
+      conda activate m2-env
       ```
 3. **Running the script:**
 
    - Run the main script:
      ```bash
-     python src/main.py
+     python src/main.py --model <model_config_file> <options>
      ```
+        - Replace `<model_config_file>` with the desired model:
+          - `default_model.yaml` (default)
+          - `model1.yaml`
+          - `model2.yaml`
+          - `blur_model.yaml`
+        - Additional `<options>`:
+          - `--fid_score`: Calculates and plots the FID score
+          - `--quick_test`: Performs a quick test run (single bath)
+        - Running only `python src/main.py` will run the default model with no additional options.
     
 
 ### Notes
 
-- Running the provided script will produce a sequence of plots:
-    - The first two depict the variability in the EEPs for each individual antenna element and the smoothed average response (2).
-
-    - The next four plots illsutrate the absolute error in gain, amplitdue and phase for two different model matricies $M_{EEPs}$ and $M_{AEP}$. These results are plotted for two versions of the StEFCal algorithm (3/4).
-
-    - The next two plots illustrate the beamformed power patterns using the different gain solutions from the StEFCal algorithm, further information about the algorithms will be printed to the terminal (5).
-
-    - The final two plots depcit a 3D plot in sine-cosine coordiantes of the beamformed power patterns using the most accurate calibrated gain solution (6).
+- Running the provided script will produce a sequence of plots in the `content` directory:
+    - Grid plots of the MNIST dataset at each epoch
+    - Progress plots over a range of timesteps at each epoch
+    - Training loss plots
+    - If specified, the FID score
 
 ## License
 

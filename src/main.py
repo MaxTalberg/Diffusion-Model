@@ -36,18 +36,15 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Run the diffusion model")
-    parser.add_argument(
-        "--model", default="default_model.yaml", help="Path to model file."
-    )
+    parser.add_argument("--model", default="default_model.yaml", help="Path to model.")
     parser.add_argument("--fid_score", action="store_true", help="Calculate FID score.")
-    parser.add_argument("--cold_diff", action="store_true", help="Use cold diffusion.")
     parser.add_argument("--quick_test", action="store_true", help="Run a quick test.")
 
     args = parser.parse_args()
 
     main(
         config_path="config.yaml",
-        model_path="default_model.yaml",
+        model_path=args.model,
         fid_score=args.fid_score,
-        quick_test=True,
+        quick_test=args.quick_test,
     )
