@@ -1,7 +1,7 @@
 hyperparameters:
-  epochs: 100
+  epochs: 10
   timesteps: [1840, 1000, 540, 140, 40, 10, 5, 2, 1]
-  interval: 7
+  interval: 2
   type: noise
 
 ddpm:

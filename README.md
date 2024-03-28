@@ -9,32 +9,6 @@ The repository contains a series of Python scripts that explore both stochastic 
 
 by **Max Talberg**
 
-## Running the script on Docker
-
-### Setting Up the Project
-
-1. **Clone the repository:**
-   - Clone the repository from GitLab:
-     ```bash
-     git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/M2_Assessment/mt942.git
-     ```
-
-2. **Build the Docker image:**
-
-   - Build image:
-     ```bash
-     docker build -t ska-project .
-     ```
-
-3. **Running the script:**
-
-   - Run the main script:
-     ```bash
-     docker run -v host_directory:/app/src/plots ska-project
-     ```
-        - Replace `host_directory` with the path to the directory where you want to save the plots, for example: `/path/to/plots` and all the images will be saved into a folder named `plots`, information acompanying will be in the terminal output.
-
-
 ## Running the script locally
 
 ### Setting Up the Project
@@ -59,9 +33,9 @@ by **Max Talberg**
 
    - Run the main script:
      ```bash
-     python src/main.py --model <model_config_file> <options>
+     python src/main.py --model <model_config> <options>
      ```
-        - Replace `<model_config_file>` with the desired model:
+        - Replace `<model_config>` with the desired model:
           - `default_model.yaml` (default)
           - `model1.yaml`
           - `model2.yaml`
@@ -79,6 +53,43 @@ by **Max Talberg**
     - Progress plots over a range of timesteps at each epoch
     - Training loss plots
     - If specified, the FID score
+
+
+## Running the script on Docker
+
+### Setting Up the Project
+
+1. **Clone the repository:**
+   - Clone the repository from GitLab:
+     ```bash
+     git clone git@gitlab.developers.cam.ac.uk:phy/data-intensive-science-mphil/M2_Assessment/mt942.git
+     ```
+
+2. **Build the Docker image:**
+
+   - Build image:
+     ```bash
+     docker build -t diffusion-model .
+     ```
+
+3. **Running the script:**
+
+   - Run the main script:
+     ```bash
+     docker run -v $(pwd)/output:/app/output diffusion-model src/main.py --model <model_config> <options>
+     ```
+        - Replace `<model_config>` with the desired model:
+          - `default_model.yaml` (default)
+          - `model1.yaml`
+          - `model2.yaml`
+          - `blur_model.yaml`
+        - Additional `<options>`:
+          - `--fid_score`: Calculates and plots the FID score
+          - `--quick_test`: Performs a quick test run (single bath)
+        - Running only `docker run my-diffusion-model src/main.py` will run the default model with no additional options.
+        - The images are mounted onto the current working directory into an 'output` folder.
+        - The diffusion model runs a lot slower in Docker than the local script. As such I would recommend running the script locally or using `--quick_test` to speed up the process.
+
 
 ## License
 
