@@ -250,7 +250,7 @@ class DDPM(nn.Module):
         """
 
         # max z_t
-        blur_dataloader = get_dataloaders(16, 8)
+        blur_dataloader = get_dataloaders(16, 0)
 
         # get images
         x, _ = next(iter(blur_dataloader))
